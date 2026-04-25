@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load sparkhub_extras %}
+
+{% block title %}SparkHub - Home{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 mb-4">Welcome to SparkHub</h1>
+        <p class="lead mb-4">Bringing people together for charitable causes</p>
+        <div>
+            {% if user.is_authenticated %}
+                <a href="{% url 'post_activity' %}" class="btn btn-light btn-lg me-3">Share Your Charity Activity</a>
+                <a href="{% url 'events' %}" class="btn btn-outline-light btn-lg">View Upcoming Events</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-light btn-lg me-3">Login</a>
+                <a href="{% url 'register' %}" class="btn btn-outline-light btn-lg">Register</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2 class="mb-4">Recent Charity Activities</h2>
+            <div class="row">
+                {% for activity in recent_activities %}
+                <div class="col-md-4 mb-4">
+                    <div class="card activity-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ activity.user.username }}</h5>
+                            <p class="card-text">{{ activity.description|truncatewords:20 }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-success">+{{ activity.points_earned }} Points</span>
+                                <small class="text-muted">{{ activity.date_posted|timesince }} ago</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <p class="text-center text-muted">No charity activities yet. Be the first to share!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2 class="mb-4">Upcoming Events</h2>
+            <div class="row">
+                {% for event in upcoming_events %}
+                <div class="col-md-4 mb-4">
+                    <div class="card event-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ event.title }}</h5>
+                            <p class="card-text">{{ event.description|truncatewords:15 }}</p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span><i class="fas fa-calendar me-2"></i>{{ event.event_date|date:"M d, Y" }}</span>
+                                <span><i class="fas fa-map-marker-alt me-2"></i>{{ event.location }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-info">Required: {{ event.required_points }} Points</span>
+                                {% if user.is_authenticated %}
+                                    {% if event|user_can_register:user %}
+                                        <a href="{% url 'register_event' event.id %}" class="btn btn-primary btn-sm">Register</a>
+                                    {% else %}
+                                        <a href="{% url 'event_detail' event.id %}" class="btn btn-outline-primary btn-sm">Details</a>
+                                    {% endif %}
+                                {% else %}
+                                    <a href="{% url 'login' %}" class="btn btn-outline-primary btn-sm">Login to Register</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <p class="text-center text-muted">No upcoming events scheduled.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <h2 class="mb-4">Community Feed</h2>
+            <div class="row">
+                {% for post in recent_posts %}
+                <div class="col-md-6 mb-4">
+                    <div class="card post-card h-100">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted">{{ post.user.username }}</h6>
+                            <p class="card-text">{{ post.content|truncatewords:25 }}</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div>
+                                    <button class="btn btn-sm btn-outline-primary like-btn" data-post-id="{{ post.id }}">
+                                        <i class="fas fa-heart{% if user.is_authenticated and user|has_liked_post:post.id %} text-danger{% endif %}"></i>
+                                        <span class="ms-2">{{ post.likes.count }}</span>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary comment-btn" data-post-id="{{ post.id }}">
+                                        <i class="fas fa-comment me-1"></i>
+                                        <span class="ms-2">{{ post.comments.count }}</span>
+                                    </button>
+                                </div>
+                                <small class="text-muted">{{ post.created_at|timesince }} ago</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <p class="text-center text-muted">No posts yet. Start the conversation!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stats-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Platform Statistics</h5>
+                    <div class="mb-3">
+                        <h3 class="display-6">{{ total_users }}</h3>
+                        <p class="text-muted">Users</p>
+                    </div>
+                    <div class="mb-3">
+                        <h3 class="display-6">{{ total_activities }}</h3>
+                        <p class="text-muted">Charity Activities Shared</p>
+                    </div>
+                    <div class="mb-3">
+                        <h3 class="display-6">{{ total_donations|floatformat:0 }}</h3>
+                        <p class="text-muted">KES Donated</p>
+                    </div>
+                    <div class="mb-3">
+                        <h3 class="display-6">{{ total_events }}</h3>
+                        <p class="text-muted">Events Hosted</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Handle likes via AJAX
+    $('.like-btn').click(function(e) {
+        e.preventDefault();
+        const btn = $(this);
+        const postId = btn.data('post-id');
+        
+        $.ajax({
+            url: '{% url "like_post" %}',
+            type: 'POST',
+            data: JSON.stringify({
+                'post_id': postId,
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+            }),
+            contentType: 'application/json',
+            success: function(response) {
+                btn.find('i').toggleClass('text-danger');
+                btn.find('span').text(response.like_count);
+            },
+            error: function(xhr) {
+                alert('Error: ' + xhr.responseJSON.error);
+            }
+        });
+    });
+    
+    // Handle comments via AJAX (simplified - in reality would need a modal)
+    $('.comment-btn').click(function(e) {
+        e.preventDefault();
+        const postId = $(this).data('post-id');
+        const content = prompt('Enter your comment:');
+        if (content && content.trim() !== '') {
+            $.ajax({
+                url: '{% url "comment_post" %}',
+                type: 'POST',
+                data: JSON.stringify({
+                    'post_id': postId,
+                    'content': content,
+                    'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+                }),
+                contentType: 'application/json',
+                success: function(response) {
+                    if (response.success) {
+                        alert('Comment added!');
+                        location.reload(); // Simple reload for now
+                    } else {
+                        alert('Error: ' + response.error);
+                    }
+                },
+                error: function(xhr) {
+                    alert('Error: ' + xhr.responseJSON.error);
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load sparkhub_extras %}
+
+{% block title %}{{ event.title }} - SparkHub{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h1 class="card-title">{{ event.title }}</h1>
+                    <p class="card-text">{{ event.description }}</p>
+                    <div class="mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <i class="fas fa-calendar me-2"></i>
+                                <strong>Date:</strong> {{ event.event_date|date:"M d, Y, H:i" }}
+                            </div>
+                            <div class="col-md-6">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                <strong>Location:</strong> {{ event.location }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        {% if user.is_authenticated %}
+                            {% if user_registered %}
+                                <button class="btn btn-success btn-lg" disabled>
+                                    <i class="fas fa-check me-2"></i> Registered
+                                </button>
+                            {% else %}
+                                <a href="{% url 'register_event' event.id %}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-ticket-alt me-2"></i> Register for Event
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i> Login to Register
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            {% if user.is_authenticated and user_registered %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Event Updates & Discussion</h5>
+                </div>
+                <div class="card-body">
+                    <!-- In a real app, this would have actual comments/updates -->
+                    <div class="mb-3">
+                        <p class="text-muted">Event discussion feature coming soon!</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Event Requirements</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Points Required</h6>
+                        <p class="fs-4">{{ event.required_points }} points</p>
+                        {% if user.is_authenticated %}
+                            <div class="progress">
+                                <div class="progress-bar {% if user.userprofile.points >= event.required_points %}bg-success{% else %}bg-warning%} 
+                                    role="progressbar" 
+                                    style="width: {% if user.userprofile.points >= event.required_points %}100{% else %}{{ user.userprofile.points|floatdiv:event.required_points|mul:100 }}{% endif %}%"
+                                    aria-valuenow="{% if user.userprofile.points >= event.required_points %}100{% else %}{{ user.userprofile.points|floatdiv:event.required_points|mul:100 }}{% endif %}"
+                                    aria-valuemin="0" aria-valuemax="100">
+                                    {{ user.userprofile.points }}/{{ event.required_points }} points
+                                </div>
+                            </div>
+                            {% if user.userprofile.points < event.required_points %}
+                                <p class="mt-2 text-muted">
+                                    You need {{ event.required_points|subtract:user.userprofile.points }} more points to register.
+                                    Share charity activities to earn 50 points each!
+                                </p>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>What to Expect</h6>
+                        <p class="text-muted">
+                            Our exclusive events bring together top contributors for networking, 
+                            recognition, and special charitable activities. Past events have included 
+                            volunteer days, charity galas, and community service projects.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

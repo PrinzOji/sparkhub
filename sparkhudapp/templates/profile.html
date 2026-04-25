@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load sparkhub_extras %}
+
+{% block title %}Profile - SparkHub{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    {% if user.userprofile.profile_picture %}
+                        <img src="{{ user.userprofile.profile_picture.url }}" class="rounded-circle mb-3" width="150" height="150">
+                    {% else %}
+                        <i class="fas fa-user fa-5x mb-3 text-muted"></i>
+                    {% endif %}
+                    <h4>{{ user.username }}</h4>
+                    <p class="text-muted">{{ user.email|default:"No email provided" }}</p>
+                    <div class="mb-4">
+                        <span class="badge bg-success me-2">Points: {{ user.userprofile.points }}</span>
+                        {% if user.userprofile.phone_number %}
+                            <span class="badge bg-info">Phone: {{ user.userprofile.phone_number }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Activity Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Charity Activities</h6>
+                        <p class="fs-5">{{ user_activities.count }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Donations Made</h6>
+                        <p class="fs-5">{{ user_donations.count }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Events Attended</h6>
+                        <p class="fs-5">{{ user_events|count_attended }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Events Registered</h6>
+                        <p class="fs-5">{{ user_events.count }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Recent Charity Activities</h5>
+                        </div>
+                        <div class="card-body">
+                            {% for activity in user_activities %}
+                            <div class="mb-3 p-3 border rounded">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6>{{ activity.description|truncatewords:15 }}</h6>
+                                        <p class="text-muted mb-1">{{ activity.date_posted|date:"M d, Y H:i" }}</p>
+                                    </div>
+                                    <span class="badge bg-success">+{{ activity.points_earned }} pts</span>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted text-center">No charity activities yet.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-12">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Recent Donations</h5>
+                        </div>
+                        <div class="card-body">
+                            {% for donation in user_donations %}
+                            <div class="mb-3 p-3 border rounded">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <p class="mb-1"><strong>KES {{ donation.amount_kes }}</strong></p>
+                                        {% if donation.message %}
+                                            <p class="text-muted small mb-1">{{ donation.message }}</p>
+                                        {% endif %}
+                                        <p class="text-muted">{{ donation.date_donated|date:"M d, Y H:i" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted text-center">No donations yet.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Event Registrations</h5>
+                        </div>
+                        <div class="card-body">
+                            {% for registration in user_events %}
+                            <div class="mb-3 p-3 border rounded">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6>{{ registration.event.title }}</h6>
+                                        <p class="text-muted mb-1">{{ registration.event.event_date|date:"M d, Y" }} | {{ registration.event.location }}</p>
+                                        <span class="badge {% if registration.attended %}bg-success{% else %}bg-warning{% endif %}">
+                                            {% if registration.attended %}Attended{% else %}Registered{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted text-center">No event registrations yet.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

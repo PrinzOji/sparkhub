@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load sparkhub_extras %}
+
+{% block title %}Events - SparkHub{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="text-center">Upcoming Events</h3>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_events %}
+                        <div class="row">
+                            {% for event in upcoming_events %}
+                            <div class="col-md-4 mb-4">
+                                <div class="card event-card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ event.title }}</h5>
+                                        <p class="card-text">{{ event.description|truncatewords:20 }}</p>
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between">
+                                                <span><i class="fas fa-calendar me-2"></i>{{ event.event_date|date:"M d, Y" }}</span>
+                                                <span><i class="fas fa-map-marker-alt me-2"></i>{{ event.location }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span class="badge bg-info">Required: {{ event.required_points }} Points</span>
+                                                {% if user.is_authenticated %}
+                                                    {% if event|user_can_register:user %}
+                                                        <a href="{% url 'register_event' event.id %}" class="btn btn-primary w-100">Register</a>
+                                                    {% else %}
+                                                        <span class="btn btn-outline-secondary w-100">Already Registered</span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <a href="{% url 'login' %}" class="btn btn-outline-primary w-100">Login to Register</a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <h4>No upcoming events scheduled.</h4>
+                            <p class="text-muted">Check back later for announcements about our next charity event!</p>
+                            {% if user.is_staff %}
+                                <a href="{% url 'admin:add_event' %}" class="btn btn-primary mt-3">Create Event (Admin)</a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Past Events</h3>
+                </div>
+                <div class="card-body">
+                    {% if past_events %}
+                        <div class="row">
+                            {% for event in past_events %}
+                            <div class="col-md-4 mb-4">
+                                <div class="card event-card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ event.title }}</h5>
+                                        <p class="card-text">{{ event.description|truncatewords:15 }}</p>
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between">
+                                                <span><i class="fas fa-calendar me-2"></i>{{ event.event_date|date:"M d, Y" }}</span>
+                                                <span><i class="fas fa-map-marker-alt me-2"></i>{{ event.location }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span class="badge bg-secondary">Required: {{ event.required_points }} Points</span>
+                                                <span class="badge {% if event|user_attended:user %}bg-success{% else %}bg-warning{% endif %}">Attended: {% if event|user_attended:user %}Yes{% else %}No{% endif %}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <h4>No past events yet.</h4>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Share Charity Activity - SparkHub{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Share Your Charity Activity</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="form-label">Describe your charity activity:</label>
+                            <textarea name="description" class="form-control" rows="4" placeholder="e.g., Volunteered at local food bank for 3 hours, helped clean up a park, donated clothes to shelter..." required></textarea>
+                            <div class="form-text">Be specific about what you did to help others.</div>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            You will earn <strong>50 points</strong> for sharing this activity. Points can be used to attend exclusive events every 4 months.
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">Share Activity</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{% url 'home' %}" class="btn btn-outline-secondary">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
