@@ -16,4 +16,5 @@ urlpatterns = [
     path('create-post/', views.create_post, name='create_post'),
     path('like-post/', views.like_post, name='like_post'),
     path('comment-post/', views.comment_post, name='comment_post'),
+    path('process-donation/', views.process_donation, name='process_donation'),
 ]

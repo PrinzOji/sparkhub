@@ -8,6 +8,8 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from .models import UserProfile, CharityActivity, Event, EventRegistration, Donation, Post, Comment, Like
 import json
+from django.views.decorators.csrf import csrf_exempt
+import requests
 
 def home(request):
     """Home page showing recent activities and events"""
@@ -240,3 +242,55 @@ def comment_post(request):
             return JsonResponse({'error': 'Comment cannot be empty'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
+
+@csrf_exempt
+def process_donation(request):
+    """Handle donation processing and integrate with Halisi API."""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            amount = data.get('amount')
+            message = data.get('message', '')
+
+            # Halisi API credentials (replace with your actual credentials)
+            halisi_api_url = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'
+            consumer_key = 'your_consumer_key'
+            consumer_secret = 'your_consumer_secret'
+            passkey = 'your_passkey'
+
+            # Generate access token
+            auth_response = requests.get(
+                'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
+                auth=(consumer_key, consumer_secret)
+            )
+            auth_response.raise_for_status()
+            access_token = auth_response.json().get('access_token')
+
+            # Prepare STK push request payload
+            headers = {
+                'Authorization': f'Bearer {access_token}',
+                'Content-Type': 'application/json'
+            }
+            payload = {
+                "BusinessShortCode": "174379",
+                "Password": passkey,
+                "Timestamp": timezone.now().strftime('%Y%m%d%H%M%S'),
+                "TransactionType": "CustomerPayBillOnline",
+                "Amount": amount,
+                "PartyA": "254700000000",  # Replace with the user's phone number
+                "PartyB": "174379",
+                "PhoneNumber": "254700000000",  # Replace with the user's phone number
+                "CallBackURL": "https://yourdomain.com/callback",
+                "AccountReference": "Donation",
+                "TransactionDesc": message
+            }
+
+            # Send STK push request
+            response = requests.post(halisi_api_url, headers=headers, json=payload)
+            response.raise_for_status()
+
+            return JsonResponse({"success": True, "message": "Donation processed successfully."})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
+
+    return JsonResponse({"success": False, "error": "Invalid request method."})
