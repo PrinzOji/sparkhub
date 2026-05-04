@@ -24,4 +24,5 @@ urlpatterns = [
     path('terms-of-service/', views.terms_of_service, name='terms_of_service'),
     path('like-post/', views.like_post, name='like_post'),
     path('comment-post/', views.comment_post, name='comment_post'),
+    path('process-donation/', views.process_donation, name='process_donation'),
 ]
