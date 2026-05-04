@@ -1,35 +1,45 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load sparkhub_extras %}
 
 {% block title %}Events - SparkHub{% endblock %}
 
 {% block content %}
-<section class="hero-section text-center">
-    <h1 class="mb-2">Events</h1>
+<section class="hero-section" style="background-image: url('{% static 'images/pexels-jonathankwuka-26390627.jpg' %}');">
+    <h1 class="mb-2"><i class="fas fa-calendar-alt me-2"></i>Events</h1>
     <p class="lead mb-0">Use your SparkHub points to join upcoming charity events.</p>
 </section>
 
 <div class="events-panel">
     <div class="card mb-4">
         <div class="card-body p-4">
-            <h3 class="mb-4 text-center">Upcoming Events</h3>
+            <h3 class="mb-4 text-center"><i class="fas fa-clock me-2"></i>Upcoming Events</h3>
             {% if upcoming_events %}
                 <div class="row g-3">
                     {% for event in upcoming_events %}
                     <div class="col-md-6">
                         <div class="event-mini-card h-100">
-                            <h5>{{ event.title }}</h5>
+                            {% if event.image %}
+                                <div style="width: 100%; height: 150px; margin: -20px -20px 15px -20px; background-size: cover; background-position: center; border-radius: 16px 16px 0 0;">
+                                    <img src="{{ event.image.url }}" alt="{{ event.title }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0;">
+                                </div>
+                            {% else %}
+                                <div style="width: 100%; height: 150px; margin: -20px -20px 15px -20px; background: linear-gradient(135deg, #2f80ed 0%, #1e5fcf 100%); display: flex; align-items: center; justify-content: center; border-radius: 16px 16px 0 0;">
+                                    <i class="fas fa-calendar fa-2x" style="color: white;"></i>
+                                </div>
+                            {% endif %}
+                            <h5><i class="fas fa-calendar me-2"></i>{{ event.title }}</h5>
                             <p class="text-muted">{{ event.description|truncatewords:20 }}</p>
                             <div class="d-flex justify-content-between flex-wrap gap-2 mb-3">
                                 <span><i class="fas fa-calendar me-2"></i>{{ event.event_date|date:"M d, Y" }}</span>
                                 <span><i class="fas fa-map-marker-alt me-2"></i>{{ event.location }}</span>
                             </div>
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                <span class="badge bg-info">Required: {{ event.required_points }} Points</span>
+                                <span class="badge bg-info"><i class="fas fa-coins me-1"></i>Required: {{ event.required_points }} Points</span>
                                 {% if event|user_can_register:user %}
-                                    <a href="{% url 'register_event' event.id %}" class="btn btn-primary btn-sm">Register</a>
+                                    <a href="{% url 'register_event' event.id %}" class="btn btn-primary btn-sm"><i class="fas fa-check me-1"></i>Register</a>
                                 {% else %}
-                                    <a href="{% url 'event_detail' event.id %}" class="btn btn-outline-primary btn-sm">Details</a>
+                                    <a href="{% url 'event_detail' event.id %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-info-circle me-1"></i>Details</a>
                                 {% endif %}
                             </div>
                         </div>
@@ -38,6 +48,7 @@
                 </div>
             {% else %}
                 <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3" style="display: block;"></i>
                     <h4>No upcoming events scheduled.</h4>
                     <p class="text-muted mb-0">Check back later for announcements about our next charity event!</p>
                 </div>
@@ -47,13 +58,22 @@
 
     <div class="card">
         <div class="card-body p-4">
-            <h3 class="mb-4 text-center">Past Events</h3>
+            <h3 class="mb-4 text-center"><i class="fas fa-history me-2"></i>Past Events</h3>
             {% if past_events %}
                 <div class="row g-3">
                     {% for event in past_events %}
                     <div class="col-md-6">
-                        <div class="event-mini-card h-100">
-                            <h5>{{ event.title }}</h5>
+                        <div class="event-mini-card h-100" style="opacity: 0.85;">
+                            {% if event.image %}
+                                <div style="width: 100%; height: 150px; margin: -20px -20px 15px -20px; background-size: cover; background-position: center; border-radius: 16px 16px 0 0;">
+                                    <img src="{{ event.image.url }}" alt="{{ event.title }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0;">
+                                </div>
+                            {% else %}
+                                <div style="width: 100%; height: 150px; margin: -20px -20px 15px -20px; background: linear-gradient(135deg, #6c757d 0%, #495057 100%); display: flex; align-items: center; justify-content: center; border-radius: 16px 16px 0 0;">
+                                    <i class="fas fa-calendar fa-2x" style="color: white;"></i>
+                                </div>
+                            {% endif %}
+                            <h5><i class="fas fa-calendar me-2"></i>{{ event.title }}</h5>
                             <p class="text-muted">{{ event.description|truncatewords:15 }}</p>
                             <div class="d-flex justify-content-between flex-wrap gap-2 mb-3">
                                 <span><i class="fas fa-calendar me-2"></i>{{ event.event_date|date:"M d, Y" }}</span>
@@ -71,6 +91,7 @@
                 </div>
             {% else %}
                 <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3" style="display: block;"></i>
                     <h4>No past events yet.</h4>
                 </div>
             {% endif %}

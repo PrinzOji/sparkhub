@@ -1,44 +1,91 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Donate - SparkHub{% endblock %}
 
 {% block content %}
+<section class="hero-section" style="background-image: url('{% static 'images/pexels-mikhail-nilov-8543602.jpg' %}'); margin-bottom: 40px;">
+    <h1 class="mb-3"><i class="fas fa-hand-holding-heart me-2"></i>Make a Donation</h1>
+    <p class="lead mb-0">Your generous support helps us create meaningful change in communities.</p>
+</section>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card feature-box">
+            <i class="fas fa-shield-alt fa-3x mb-3"></i>
+            <h5>Secure Payments</h5>
+            <p>All donations are processed securely through M-Pesa integration.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card feature-box">
+            <i class="fas fa-receipt fa-3x mb-3"></i>
+            <h5>Transparent</h5>
+            <p>Track where your donation goes and see the impact you make.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card feature-box">
+            <i class="fas fa-heart fa-3x mb-3"></i>
+            <h5>Community Focused</h5>
+            <p>100% of donations support local charitable causes.</p>
+        </div>
+    </div>
+</div>
+
 <div class="form-card-wrap">
     <div class="card form-card">
         <div class="card-header text-center">
-            <h3 class="mb-0">Make a Donation</h3>
+            <i class="fas fa-donate me-2"></i>
+            <h3 class="mb-0">Donation Details</h3>
         </div>
         <div class="card-body">
             <form method="post">
                 {% csrf_token %}
                 <div class="mb-4">
-                    <label class="form-label">Phone Number:</label>
+                    <label class="form-label"><i class="fas fa-phone me-2 text-success"></i>Phone Number:</label>
                     <input type="tel" name="phone_number" class="form-control" placeholder="Enter your phone number in format 2547XXXXXXXX"
                         value="{{ profile.phone_number|default:'' }}" required>
                     <div class="form-text">Use the phone number registered with Safaricom M-Pesa.</div>
                 </div>
                 <div class="mb-4">
-                    <label class="form-label">Amount (KES):</label>
+                    <label class="form-label"><i class="fas fa-coins me-2 text-warning"></i>Amount (KES):</label>
                     <input type="number" name="amount" class="form-control" placeholder="Enter amount in Kenyan Shillings" min="1" step="1" required>
                     <div class="form-text">Your donation helps support charitable causes in our community.</div>
                 </div>
                 <div class="mb-4">
-                    <label class="form-label">Message (Optional):</label>
+                    <label class="form-label"><i class="fas fa-comment me-2 text-info"></i>Message (Optional):</label>
                     <textarea name="message" class="form-control" rows="4" placeholder="Add a personal message with your donation..."></textarea>
                 </div>
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>
-                    Note: Donations do not earn points. Points are earned only by sharing charity activities.
+                <div class="alert alert-info border-0" style="background: linear-gradient(135deg, rgba(47, 128, 237, 0.1) 0%, rgba(20, 182, 125, 0.1) 100%);">
+                    <i class="fas fa-lightbulb me-2 text-info"></i>
+                    <strong>Did you know?</strong> Donations do not earn points. Points are earned only by sharing charity activities. However, your generous support makes a real impact on our community!
                 </div>
                 <div class="d-grid">
-                    <button type="submit" class="btn btn-primary btn-lg">Donate Now</button>
+                    <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-hand-holding-heart me-2"></i>Donate Now</button>
                 </div>
             </form>
         </div>
-        <div class="card-footer text-center">
-            <a href="{% url 'home' %}" class="btn btn-outline-secondary">Back to Home</a>
+        <div class="card-footer text-center py-3">
+            <p class="text-muted mb-3">Made with <i class="fas fa-heart text-danger"></i> by the SparkHub Community</p>
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i>Back to Home</a>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5 mb-4">
+    <div class="col-md-6 offset-md-3">
+        <div class="card" style="border: 2px solid rgba(20, 182, 125, 0.3);">
+            <div class="card-body text-center p-4">
+                <h5 class="card-title"><i class="fas fa-gift me-2"></i>Why Donate?</h5>
+                <ul class="list-unstyled mt-3">
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Support local charities</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Help families in need</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Build a stronger community</li>
+                    <li><i class="fas fa-check-circle text-success me-2"></i>Make a real difference</li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
 {% endblock %}
-

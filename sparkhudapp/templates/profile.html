@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load sparkhub_extras %}
 
 {% block title %}Profile - SparkHub{% endblock %}
@@ -9,42 +10,46 @@
         <div class="col-lg-4">
             {% if user.userprofile.profile_picture %}
                 <div class="profile-avatar-large">
-                    <img src="{{ user.userprofile.profile_picture.url }}" alt="{{ user.username }}">
+                    <img src="{{ user.userprofile.profile_picture.url }}" alt="{{ user.username }}" loading="lazy">
                 </div>
             {% else %}
-                <div class="profile-avatar-large"><i class="fas fa-user fa-2x"></i></div>
+                <div class="profile-avatar-large"><i class="fas fa-user fa-3x"></i></div>
             {% endif %}
-            <div>
+            <div class="text-center">
                 <a href="{% url 'edit_profile' %}" class="profile-photo-action">
-                    <i class="fas fa-camera"></i>
+                    <i class="fas fa-camera me-1"></i>
                     {% if user.userprofile.profile_picture %}Change Photo{% else %}Upload Photo{% endif %}
                 </a>
             </div>
-            <h1 class="mb-1">{{ user.username }}</h1>
-            <p class="mb-0">{{ user.email|default:"No email provided" }}</p>
+            <h1 class="mb-1 text-center">{{ user.username }}</h1>
+            <p class="mb-0 text-center"><i class="fas fa-envelope me-2"></i>{{ user.email|default:"No email provided" }}</p>
         </div>
         <div class="col-lg-8">
             <div class="row g-3">
                 <div class="col-md-6">
                     <div class="profile-stat">
+                        <i class="fas fa-star me-2"></i>
                         <p>Total Points</p>
                         <strong>{{ user.userprofile.points }}</strong>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="profile-stat">
+                        <i class="fas fa-hand-holding-heart me-2"></i>
                         <p>Charity Activities</p>
                         <strong>{{ user_activities.count }}</strong>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="profile-stat">
+                        <i class="fas fa-gift me-2"></i>
                         <p>Donations</p>
                         <strong>{{ user_donations.count }}</strong>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="profile-stat">
+                        <i class="fas fa-calendar-check me-2"></i>
                         <p>Events Registered</p>
                         <strong>{{ user_events.count }}</strong>
                     </div>
@@ -58,22 +63,25 @@
     <div class="col-lg-4">
         <div class="card">
             <div class="card-body p-4">
-                <h3 class="mb-4">Activity Summary</h3>
-                <div class="d-flex justify-content-between mb-3">
-                    <span>Charity Activities</span>
-                    <strong>{{ user_activities.count }}</strong>
+                <h3 class="mb-4"><i class="fas fa-chart-bar me-2"></i>Activity Summary</h3>
+                <div class="d-flex justify-content-between mb-3 align-items-center">
+                    <span><i class="fas fa-hand-holding-heart me-2 text-success"></i>Charity Activities</span>
+                    <strong class="display-6">{{ user_activities.count }}</strong>
                 </div>
-                <div class="d-flex justify-content-between mb-3">
-                    <span>Donations Made</span>
-                    <strong>{{ user_donations.count }}</strong>
+                <hr>
+                <div class="d-flex justify-content-between mb-3 align-items-center">
+                    <span><i class="fas fa-gift me-2 text-info"></i>Donations Made</span>
+                    <strong class="display-6">{{ user_donations.count }}</strong>
                 </div>
-                <div class="d-flex justify-content-between mb-3">
-                    <span>Events Attended</span>
-                    <strong>{{ user_events|count_attended }}</strong>
+                <hr>
+                <div class="d-flex justify-content-between mb-3 align-items-center">
+                    <span><i class="fas fa-check me-2 text-warning"></i>Events Attended</span>
+                    <strong class="display-6">{{ user_events|count_attended }}</strong>
                 </div>
-                <div class="d-flex justify-content-between">
-                    <span>Events Registered</span>
-                    <strong>{{ user_events.count }}</strong>
+                <hr>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-calendar me-2 text-primary"></i>Events Registered</span>
+                    <strong class="display-6">{{ user_events.count }}</strong>
                 </div>
             </div>
         </div>
@@ -82,53 +90,66 @@
     <div class="col-lg-8">
         <div class="card mb-4">
             <div class="card-body p-0">
-                <h3 class="px-4 pt-4 mb-3">Recent Charity Activities</h3>
+                <h3 class="px-4 pt-4 mb-3"><i class="fas fa-heart me-2"></i>Recent Charity Activities</h3>
                 {% for activity in user_activities %}
                 <div class="post-panel m-3">
                     <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <p class="mb-1">{{ activity.description }}</p>
-                            <p class="text-muted mb-0">{{ activity.date_posted|date:"M d, Y H:i" }}</p>
+                        <div style="flex: 1;">
+                            {% if activity.image %}
+                                <img src="{{ activity.image.url }}" class="img-fluid rounded mb-2" alt="Activity image" style="max-height: 120px; object-fit: cover; width: 100%;" loading="lazy">
+                            {% endif %}
+                            <p class="mb-1"><strong>{{ activity.description|truncatewords:30 }}</strong></p>
+                            <p class="text-muted mb-0"><i class="fas fa-clock me-1"></i>{{ activity.date_posted|date:"M d, Y H:i" }}</p>
                         </div>
-                        <span class="badge bg-success">+{{ activity.points_earned }} pts</span>
+                        <span class="badge bg-success ms-2"><i class="fas fa-star me-1"></i>+{{ activity.points_earned }} pts</span>
                     </div>
                 </div>
                 {% empty %}
-                <p class="text-muted text-center py-5">No charity activities yet.</p>
+                <p class="text-muted text-center py-5"><i class="fas fa-inbox me-2"></i>No charity activities yet.</p>
                 {% endfor %}
             </div>
         </div>
 
         <div class="card mb-4">
             <div class="card-body p-0">
-                <h3 class="px-4 pt-4 mb-3">Recent Donations</h3>
+                <h3 class="px-4 pt-4 mb-3"><i class="fas fa-hand-holding-heart me-2"></i>Recent Donations</h3>
                 {% for donation in user_donations %}
                 <div class="post-panel m-3">
-                    <p class="mb-1"><strong>KES {{ donation.amount_kes }}</strong></p>
-                    {% if donation.message %}
-                        <p class="text-muted mb-1">{{ donation.message }}</p>
-                    {% endif %}
-                    <p class="text-muted mb-0">{{ donation.date_donated|date:"M d, Y H:i" }}</p>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="mb-1"><strong><i class="fas fa-coins me-2 text-warning"></i>KES {{ donation.amount_kes }}</strong></p>
+                            {% if donation.message %}
+                                <p class="text-muted mb-1">{{ donation.message }}</p>
+                            {% endif %}
+                            <p class="text-muted mb-0"><i class="fas fa-calendar me-1"></i>{{ donation.date_donated|date:"M d, Y H:i" }}</p>
+                        </div>
+                        <span class="badge bg-info"><i class="fas fa-gift me-1"></i>Donated</span>
+                    </div>
                 </div>
                 {% empty %}
-                <p class="text-muted text-center py-5">No donations yet.</p>
+                <p class="text-muted text-center py-5"><i class="fas fa-inbox me-2"></i>No donations yet.</p>
                 {% endfor %}
             </div>
         </div>
 
         <div class="card">
             <div class="card-body p-0">
-                <h3 class="px-4 pt-4 mb-3">Event Registrations</h3>
+                <h3 class="px-4 pt-4 mb-3"><i class="fas fa-calendar-alt me-2"></i>Event Registrations</h3>
                 {% for registration in user_events %}
                 <div class="post-panel m-3">
-                    <h5>{{ registration.event.title }}</h5>
-                    <p class="text-muted mb-2">{{ registration.event.event_date|date:"M d, Y" }} | {{ registration.event.location }}</p>
-                    <span class="badge {% if registration.attended %}bg-success{% else %}bg-warning{% endif %}">
-                        {% if registration.attended %}Attended{% else %}Registered{% endif %}
-                    </span>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div style="flex: 1;">
+                            <h5 class="mb-2">{{ registration.event.title }}</h5>
+                            <p class="text-muted mb-2"><i class="fas fa-calendar me-1"></i>{{ registration.event.event_date|date:"M d, Y" }}</p>
+                            <p class="text-muted mb-0"><i class="fas fa-map-marker-alt me-1"></i>{{ registration.event.location }}</p>
+                        </div>
+                        <span class="badge {% if registration.attended %}bg-success{% else %}bg-warning{% endif %}">
+                            {% if registration.attended %}<i class="fas fa-check me-1"></i>Attended{% else %}<i class="fas fa-clock me-1"></i>Registered{% endif %}
+                        </span>
+                    </div>
                 </div>
                 {% empty %}
-                <p class="text-muted text-center py-5">No event registrations yet.</p>
+                <p class="text-muted text-center py-5"><i class="fas fa-inbox me-2"></i>No event registrations yet.</p>
                 {% endfor %}
             </div>
         </div>

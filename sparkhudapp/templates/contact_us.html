@@ -1,11 +1,145 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    
-</body>
-</html>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contact Us - SparkHub{% endblock %}
+
+{% block content %}
+<section class="hero-section" style="background-image: url('{% static 'images/pexels-kishamba-media-1615794235-27516156.jpg' %}'); margin-bottom: 40px;">
+    <h1 class="mb-3"><i class="fas fa-envelope me-2"></i>Get In Touch</h1>
+    <p class="lead mb-0">Have questions or feedback? We'd love to hear from you.</p>
+</section>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card text-center" style="border: none; background: linear-gradient(135deg, rgba(22, 159, 73, 0.1) 0%, rgba(20, 182, 125, 0.1) 100%); border: 2px solid rgba(20, 182, 125, 0.2);">
+            <div class="card-body">
+                <i class="fas fa-envelope fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Email</h5>
+                <p class="card-text">
+                    <a href="mailto:info@sparkhub.org" class="text-decoration-none">
+                        info@sparkhub.org
+                    </a>
+                </p>
+                <small class="text-muted">We respond within 24 hours</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center" style="border: none; background: linear-gradient(135deg, rgba(47, 128, 237, 0.1) 0%, rgba(30, 95, 207, 0.1) 100%); border: 2px solid rgba(47, 128, 237, 0.2);">
+            <div class="card-body">
+                <i class="fas fa-phone fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Phone</h5>
+                <p class="card-text">
+                    <a href="tel:+254712345678" class="text-decoration-none">
+                        +254 (0) 712 345 678
+                    </a>
+                </p>
+                <small class="text-muted">Mon - Fri, 9AM - 5PM EAT</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center" style="border: none; background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 152, 0, 0.1) 100%); border: 2px solid rgba(255, 152, 0, 0.2);">
+            <div class="card-body">
+                <i class="fas fa-map-marker-alt fa-3x text-warning mb-3"></i>
+                <h5 class="card-title">Office</h5>
+                <p class="card-text">
+                    <span class="text-dark">
+                        Nairobi, Kenya
+                    </span>
+                </p>
+                <small class="text-muted">East Africa Hub</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="card form-card">
+            <div class="card-header text-center">
+                <i class="fas fa-comments me-2"></i>
+                <h3 class="mb-0">Send us a Message</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <strong>Please correct the errors below:</strong>
+                        {{ form.errors }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-4">
+                        <label for="name" class="form-label"><i class="fas fa-user me-2"></i>Full Name</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Your full name" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="email" class="form-label"><i class="fas fa-envelope me-2"></i>Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="your.email@example.com" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="subject" class="form-label"><i class="fas fa-heading me-2"></i>Subject</label>
+                        <input type="text" class="form-control" id="subject" name="subject" placeholder="What is this about?" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="message" class="form-label"><i class="fas fa-pen-fancy me-2"></i>Message</label>
+                        <textarea class="form-control" id="message" name="message" rows="6" placeholder="Tell us more..." required></textarea>
+                        <div class="form-text">Please provide as much detail as possible so we can assist you better.</div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-paper-plane me-2"></i>Send Message</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="card" style="border: 2px solid rgba(20, 182, 125, 0.2); background: linear-gradient(135deg, rgba(20, 182, 125, 0.05), rgba(47, 128, 237, 0.05));">
+            <div class="card-body p-4">
+                <h5 class="card-title mb-3"><i class="fas fa-question-circle me-2"></i>FAQ</h5>
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item border-0 bg-transparent mb-2">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                <i class="fas fa-circle-notch me-2 text-success"></i>How do I earn points?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">You earn 50 points each time you share a charity activity on the platform. The more you contribute, the more points you accumulate!</div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border-0 bg-transparent mb-2">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                <i class="fas fa-circle-notch me-2 text-success"></i>What can I do with my points?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">You can use your points to register for exclusive events hosted by SparkHub. Each event requires a minimum number of points, so keep earning to unlock more opportunities!</div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border-0 bg-transparent">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                <i class="fas fa-circle-notch me-2 text-success"></i>How do I report an issue?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">Please use the contact form above or email us directly at support@sparkhub.org. Include as much detail as possible about the issue, and our team will get back to you within 24 hours.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

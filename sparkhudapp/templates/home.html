@@ -1,20 +1,21 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load sparkhub_extras %}
 
 {% block title %}SparkHub - Home{% endblock %}
 
 {% block content %}
-<div class="hero-section">
+<div class="hero-section" style="background-image: url('{% static 'images/hands.jpg' %}');">
     <div class="text-center">
         <h1 class="display-4 mb-4">Welcome to SparkHub</h1>
         <p class="lead mb-4">Bringing people together for charitable causes</p>
         <div>
             {% if user.is_authenticated %}
-                <a href="{% url 'post_activity' %}" class="btn btn-light btn-lg me-3">Share Your Charity Activity</a>
-                <a href="{% url 'events' %}" class="btn btn-outline-light btn-lg">View Upcoming Events</a>
+                <a href="{% url 'post_activity' %}" class="btn btn-light btn-lg me-3"><i class="fas fa-share me-2"></i>Share Your Charity Activity</a>
+                <a href="{% url 'events' %}" class="btn btn-outline-light btn-lg"><i class="fas fa-calendar me-2"></i>View Upcoming Events</a>
             {% else %}
-                <a href="{% url 'login' %}" class="btn btn-light btn-lg me-3">Login</a>
-                <a href="{% url 'register' %}" class="btn btn-outline-light btn-lg">Register</a>
+                <a href="{% url 'login' %}" class="btn btn-light btn-lg me-3"><i class="fas fa-sign-in-alt me-2"></i>Login</a>
+                <a href="{% url 'register' %}" class="btn btn-outline-light btn-lg"><i class="fas fa-user-plus me-2"></i>Register</a>
             {% endif %}
         </div>
     </div>
@@ -23,11 +24,18 @@
 <div>
     <div class="row mb-4">
         <div class="col-md-12">
-            <h2 class="mb-4">Recent Charity Activities</h2>
+            <h2 class="mb-4"><i class="fas fa-hand-holding-heart me-2"></i>Recent Charity Activities</h2>
             <div class="row">
                 {% for activity in recent_activities %}
                 <div class="col-md-4 mb-4">
                     <div class="card activity-card h-100">
+                        {% if activity.image %}
+                            <img src="{{ activity.image.url }}" class="card-img-top" alt="Activity image" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <div style="height: 200px; background: linear-gradient(135deg, #14b67d 0%, #117965 100%); display: flex; align-items: center; justify-content: center; color: white;">
+                                <i class="fas fa-heart fa-3x"></i>
+                            </div>
+                        {% endif %}
                         <div class="card-body">
                             <div class="d-flex align-items-center mb-3">
                                 {% if activity.user.userprofile.profile_picture %}
@@ -39,7 +47,7 @@
                             </div>
                             <p class="card-text">{{ activity.description|truncatewords:20 }}</p>
                             <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-success">+{{ activity.points_earned }} Points</span>
+                                <span class="badge bg-success"><i class="fas fa-star me-1"></i>+{{ activity.points_earned }} Points</span>
                                 <small class="text-muted">{{ activity.date_posted|timesince }} ago</small>
                             </div>
                         </div>
@@ -47,7 +55,7 @@
                 </div>
                 {% empty %}
                 <div class="col-12">
-                    <p class="text-center text-muted">No charity activities yet. Be the first to share!</p>
+                    <p class="text-center text-muted"><i class="fas fa-inbox me-2"></i>No charity activities yet. Be the first to share!</p>
                 </div>
                 {% endfor %}
             </div>
@@ -56,28 +64,35 @@
 
     <div class="row mb-4">
         <div class="col-md-12">
-            <h2 class="mb-4">Upcoming Events</h2>
+            <h2 class="mb-4"><i class="fas fa-calendar-alt me-2"></i>Upcoming Events</h2>
             <div class="row">
                 {% for event in upcoming_events %}
                 <div class="col-md-4 mb-4">
                     <div class="card event-card h-100">
+                        {% if event.image %}
+                            <img src="{{ event.image.url }}" class="card-img-top" alt="Event image" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <div style="height: 200px; background: linear-gradient(135deg, #2f80ed 0%, #1e5fcf 100%); display: flex; align-items: center; justify-content: center; color: white;">
+                                <i class="fas fa-calendar fa-3x"></i>
+                            </div>
+                        {% endif %}
                         <div class="card-body">
                             <h5 class="card-title">{{ event.title }}</h5>
                             <p class="card-text">{{ event.description|truncatewords:15 }}</p>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                                 <span><i class="fas fa-calendar me-2"></i>{{ event.event_date|date:"M d, Y" }}</span>
                                 <span><i class="fas fa-map-marker-alt me-2"></i>{{ event.location }}</span>
                             </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-info">Required: {{ event.required_points }} Points</span>
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <span class="badge bg-info"><i class="fas fa-coins me-1"></i>Required: {{ event.required_points }} Points</span>
                                 {% if user.is_authenticated %}
                                     {% if event|user_can_register:user %}
-                                        <a href="{% url 'register_event' event.id %}" class="btn btn-primary btn-sm">Register</a>
+                                        <a href="{% url 'register_event' event.id %}" class="btn btn-primary btn-sm"><i class="fas fa-check me-1"></i>Register</a>
                                     {% else %}
-                                        <a href="{% url 'event_detail' event.id %}" class="btn btn-outline-primary btn-sm">Details</a>
+                                        <a href="{% url 'event_detail' event.id %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-info-circle me-1"></i>Details</a>
                                     {% endif %}
                                 {% else %}
-                                    <a href="{% url 'login' %}" class="btn btn-outline-primary btn-sm">Login to Register</a>
+                                    <a href="{% url 'login' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
                                 {% endif %}
                             </div>
                         </div>
@@ -85,7 +100,7 @@
                 </div>
                 {% empty %}
                 <div class="col-12">
-                    <p class="text-center text-muted">No upcoming events scheduled.</p>
+                    <p class="text-center text-muted"><i class="fas fa-inbox me-2"></i>No upcoming events scheduled.</p>
                 </div>
                 {% endfor %}
             </div>

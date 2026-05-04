@@ -28,6 +28,7 @@ class CharityActivity(models.Model):
     date_posted = models.DateTimeField(auto_now_add=True)
     # Points are fixed at 50 per activity, but we can store it for flexibility
     points_earned = models.IntegerField(default=50)
+    image = models.ImageField(upload_to='activity_images/', blank=True, null=True)
     
     def __str__(self):
         return f"{self.user.username} - {self.description[:50]}"
@@ -39,6 +40,7 @@ class Event(models.Model):
     location = models.CharField(max_length=200)
     required_points = models.IntegerField(default=1000)  # Points needed to attend
     created_at = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to='event_images/', blank=True, null=True)
     
     def __str__(self):
         return self.title

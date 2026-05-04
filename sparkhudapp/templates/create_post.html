@@ -1,26 +1,62 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Create Post - SparkHub{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">Create Post</h2>
+<section class="hero-section" style="background-image: url('{% static 'images/pexels-rdne-6646870.jpg' %}'); margin-bottom: 30px;">
+    <h1 class="mb-3"><i class="fas fa-pencil-alt me-2"></i>Share Your Story</h1>
+    <p class="lead mb-0">Create a post and inspire your community with your charity activities.</p>
+</section>
 
-<div class="card">
-    <div class="card-body">
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="mb-3">
-                <label for="content" class="form-label">Post</label>
-                <textarea class="form-control" id="content" name="content" rows="5" placeholder="Share your story or add a video." ></textarea>
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="card form-card mb-4">
+            <div class="card-header text-center">
+                <i class="fas fa-plus me-2"></i>
+                <h3 class="mb-0">Create New Post</h3>
             </div>
-            <div class="mb-3">
-                <label for="video" class="form-label">Upload Video</label>
-                <input class="form-control" type="file" id="video" name="video" accept="video/*">
-                <div class="form-text">Optional. Upload a video to share in your post.</div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="content" class="form-label"><i class="fas fa-pen-fancy me-2"></i>Post Content</label>
+                        <textarea class="form-control" id="content" name="content" rows="6" placeholder="Share your story, updates from your charity activities, or inspire others..." required></textarea>
+                        <div class="form-text">Be descriptive and engaging! Share what you did, who you helped, and the impact you made.</div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="image" class="form-label"><i class="fas fa-image me-2"></i>Upload Image</label>
+                        <input class="form-control" type="file" id="image" name="image" accept="image/*">
+                        <div class="form-text">Optional. Add an image to make your post more engaging.</div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="video" class="form-label"><i class="fas fa-video me-2"></i>Upload Video</label>
+                        <input class="form-control" type="file" id="video" name="video" accept="video/*">
+                        <div class="form-text">Optional. Upload a video to showcase your activity (MP4 format recommended).</div>
+                    </div>
+                    <div class="alert alert-success border-0" style="background: linear-gradient(135deg, rgba(22, 159, 73, 0.1) 0%, rgba(20, 182, 125, 0.1) 100%);">
+                        <i class="fas fa-star me-2 text-success"></i>
+                        <strong>Earn 50 points</strong> when you post about your charity activities!
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-check me-2"></i>Post Now</button>
+                        <a href="{% url 'social_feed' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i>Cancel</a>
+                    </div>
+                </form>
             </div>
-            <button type="submit" class="btn btn-primary">Post</button>
-            <a href="{% url 'social_feed' %}" class="btn btn-outline-secondary ms-2">Cancel</a>
-        </form>
+        </div>
+
+        <div class="card" style="border: 2px solid rgba(20, 182, 125, 0.2);">
+            <div class="card-body text-center p-4">
+                <h5 class="card-title"><i class="fas fa-lightbulb me-2"></i>Tips for Great Posts</h5>
+                <ul class="list-unstyled mt-3 text-start" style="max-width: 400px; margin-left: auto; margin-right: auto;">
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i><strong>Be specific</strong> about what you did</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i><strong>Include images</strong> or videos for impact</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i><strong>Share the impact</strong> you made</li>
+                    <li><i class="fas fa-check-circle text-success me-2"></i><strong>Inspire others</strong> to take action</li>
+                </ul>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

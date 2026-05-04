@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load sparkhub_extras %}
 
 {% block title %}Social Feed - SparkHub{% endblock %}
 
 {% block content %}
-<section class="hero-section text-center">
-    <h1 class="mb-3">Community Feed</h1>
+<section class="hero-section" style="background-image: url('{% static 'images/pexels-rdne-6646870.jpg' %}');">
+    <h1 class="mb-3"><i class="fas fa-comments me-2"></i>Community Feed</h1>
     <p class="lead mb-4">Share updates from your charity activities and keep the community inspired.</p>
     <a href="{% url 'create_post' %}" class="btn btn-light btn-lg">
         <i class="fas fa-plus me-2"></i>Create Post
@@ -16,7 +17,7 @@
     <div class="col-lg-8">
         <div class="card mb-4">
             <div class="card-body p-4">
-                <h3 class="mb-1">Latest Posts</h3>
+                <h3 class="mb-1"><i class="fas fa-fire me-2"></i>Latest Posts</h3>
                 <p class="text-muted mb-4">Fresh stories and updates from the community.</p>
 
                 {% for post in posts %}
@@ -29,21 +30,23 @@
                         {% endif %}
                         <div>
                             <h5 class="mb-0">{{ post.user.username }}</h5>
-                            <small class="text-muted">Posted {{ post.created_at|timesince }} ago</small>
+                            <small class="text-muted"><i class="fas fa-clock me-1"></i>Posted {{ post.created_at|timesince }} ago</small>
                         </div>
                     </div>
 
                     <p class="mb-3">{{ post.content }}</p>
 
                     {% if post.video %}
-                        <video controls class="w-100 rounded mb-3" style="max-height: 420px;">
-                            <source src="{{ post.video.url }}" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
+                        <div class="mb-3" style="max-height: 420px; border-radius: 12px; overflow: hidden;">
+                            <video controls class="w-100" style="max-height: 420px;">
+                                <source src="{{ post.video.url }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
                     {% endif %}
 
                     {% if post.image %}
-                        <img src="{{ post.image.url }}" class="img-fluid rounded mb-3" alt="Post image" style="max-height: 300px;">
+                        <img src="{{ post.image.url }}" class="img-fluid rounded mb-3" alt="Post image" style="max-height: 300px; object-fit: cover; width: 100%;">
                     {% endif %}
 
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -57,14 +60,15 @@
                                 <span>{{ post.comments.count }}</span>
                             </button>
                         </div>
-                        <small class="text-muted">Updated {{ post.updated_at|timesince }} ago</small>
+                        <small class="text-muted"><i class="fas fa-sync me-1"></i>Updated {{ post.updated_at|timesince }} ago</small>
                     </div>
                 </div>
                 {% empty %}
                 <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3" style="display: block;"></i>
                     <h4>No posts yet</h4>
                     <p class="text-muted">Be the first to share something with the community.</p>
-                    <a href="{% url 'create_post' %}" class="btn btn-primary">Create First Post</a>
+                    <a href="{% url 'create_post' %}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Create First Post</a>
                 </div>
                 {% endfor %}
             </div>
@@ -74,30 +78,45 @@
     <div class="col-lg-4">
         <div class="card mb-4">
             <div class="card-body p-4">
-                <h3 class="mb-5">Quick Stats</h3>
+                <h3 class="mb-5"><i class="fas fa-chart-bar me-2"></i>Quick Stats</h3>
                 {% if user.is_authenticated %}
-                    <p class="text-muted mb-1">Your Points</p>
-                    <p class="display-6 mb-1">{{ user.userprofile.points }}</p>
-                    <p class="text-muted mb-4">Earn 50 points per charity activity</p>
+                    <div class="mb-4">
+                        <p class="text-muted mb-1"><i class="fas fa-star me-2"></i>Your Points</p>
+                        <p class="display-6 mb-1 text-success">{{ user.userprofile.points }}</p>
+                        <p class="text-muted small">Earn 50 points per charity activity</p>
+                    </div>
 
-                    <p class="text-muted mb-1">Activities Shared</p>
-                    <p class="display-6 mb-4">{{ user.charityactivity_set.count }}</p>
+                    <div class="mb-4">
+                        <p class="text-muted mb-1"><i class="fas fa-hand-holding-heart me-2"></i>Activities Shared</p>
+                        <p class="display-6 mb-4">{{ user.charityactivity_set.count }}</p>
+                    </div>
 
-                    <p class="text-muted mb-1">Events Registered</p>
-                    <p class="display-6 mb-0">{{ user.eventregistration_set.count }}</p>
+                    <div class="mb-4">
+                        <p class="text-muted mb-1"><i class="fas fa-calendar-check me-2"></i>Events Registered</p>
+                        <p class="display-6 mb-0">{{ user.eventregistration_set.count }}</p>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-lock fa-3x text-muted mb-3" style="display: block;"></i>
+                        <p class="text-muted mb-3">Sign in to view your stats</p>
+                        <a href="{% url 'login' %}" class="btn btn-primary btn-sm"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
+                    </div>
                 {% endif %}
             </div>
         </div>
 
         <div class="card">
             <div class="card-body p-4">
-                <h3 class="mb-5">How It Works</h3>
+                <h3 class="mb-5"><i class="fas fa-lightbulb me-2"></i>How It Works</h3>
                 <ol class="text-muted ps-4">
-                    <li class="mb-2">Share your charity activities to earn points.</li>
-                    <li class="mb-2">Use points for event access and rewards.</li>
-                    <li class="mb-2">Keep posting to help the community grow.</li>
-                    <li>Donate and support causes whenever you can.</li>
+                    <li class="mb-3"><strong class="text-dark">Share activities:</strong> Post your charity activities to earn points.</li>
+                    <li class="mb-3"><strong class="text-dark">Use points:</strong> Redeem points for event access and rewards.</li>
+                    <li class="mb-3"><strong class="text-dark">Engage:</strong> Like and comment on posts to support the community.</li>
+                    <li class="mb-3"><strong class="text-dark">Donate:</strong> Support causes whenever you can.</li>
                 </ol>
+                <a href="{% url 'about' %}" class="btn btn-outline-primary btn-sm btn-block w-100 mt-3"><i class="fas fa-info-circle me-1"></i>Learn More</a>
+            </div>
+        </div>
             </div>
         </div>
     </div>

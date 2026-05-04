@@ -38,6 +38,10 @@ def home(request):
     }
     return render(request, 'home.html', context)
 
+def about(request):
+    """About us page"""
+    return render(request, 'about.html')
+
 def register(request):
     """User registration"""
     if request.method == 'POST':
@@ -307,6 +311,24 @@ def privacy_settings(request):
 def terms_of_service(request):
     """Static terms of service page."""
     return render(request, 'terms_of_service.html')
+
+def contact_us(request):
+    """Contact us page"""
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        subject = request.POST.get('subject', '').strip()
+        message = request.POST.get('message', '').strip()
+        
+        if name and email and subject and message:
+            # In a real application, you would send an email here
+            # For now, we'll just show a success message
+            messages.success(request, 'Thank you for reaching out! We\'ll get back to you soon.')
+            return redirect('home')
+        else:
+            messages.error(request, 'Please fill in all fields.')
+    
+    return render(request, 'contact_us.html')
 
 @login_required
 @require_http_methods(["POST"])
