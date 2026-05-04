@@ -20,7 +20,7 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
-    instance.userprofile.save()
+    UserProfile.objects.get_or_create(user=instance)
 
 class CharityActivity(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -70,8 +70,9 @@ class Donation(models.Model):
 # Social features for interaction
 class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    content = models.TextField()
+    content = models.TextField(blank=True)
     image = models.ImageField(upload_to='post_images/', blank=True, null=True)
+    video = models.FileField(upload_to='post_videos/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

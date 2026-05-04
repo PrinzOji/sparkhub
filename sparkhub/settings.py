@@ -74,10 +74,13 @@ WSGI_APPLICATION = 'sparkhub.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+db_path = Path(os.environ.get('SPARKHUB_DB_PATH', BASE_DIR / 'db.sqlite3'))
+db_path.parent.mkdir(parents=True, exist_ok=True)
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': Path(os.environ.get('SPARKHUB_DB_PATH', Path(os.environ.get('LOCALAPPDATA', BASE_DIR)) / 'SparkHub' / 'db.sqlite3')),
+        'NAME': db_path,
     }
 }
 
@@ -120,3 +123,14 @@ STATIC_URL = 'static/'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# MPesa / Safaricom Daraja settings
+MPESA_ENVIRONMENT = os.environ.get('MPESA_ENVIRONMENT', 'sandbox').lower()
+MPESA_BASE_URL = 'https://sandbox.safaricom.co.ke' if MPESA_ENVIRONMENT == 'sandbox' else 'https://api.safaricom.co.ke'
+MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY', '1XnbR8eBwgyQA0WQC3K2w2w9NTobIK9vrCCYH8R4VcL4guEa')
+MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET', 'qJ6nMJIHiv0MsjG9lwyFwiOGyXauuzO0yKRVerhtc0ZygAwy82mo4VvWAHB7Igjw')
+MPESA_PASSKEY = os.environ.get('MPESA_PASSKEY', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919')
+MPESA_SHORTCODE = os.environ.get('MPESA_SHORTCODE', '174379')
+MPESA_CALLBACK_URL = os.environ.get('MPESA_CALLBACK_URL', 'https://mydomain.com/mpesa-express-simulate/')
+MPESA_OAUTH_URL = f"{MPESA_BASE_URL}/oauth/v1/generate?grant_type=client_credentials"
+MPESA_STK_PUSH_URL = f"{MPESA_BASE_URL}/mpesa/stkpush/v1/processrequest"

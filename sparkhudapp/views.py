@@ -8,12 +8,12 @@ from django.contrib import messages
 from django.utils import timezone
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.db.models import Sum
 from .models import UserProfile, CharityActivity, Event, EventRegistration, Donation, Post, Comment, Like
 from .forms import UserUpdateForm, ProfileUpdateForm
+from .mpesa import stk_push
 import json
-from django.views.decorators.csrf import csrf_exempt
 import requests
 
 @ensure_csrf_cookie
@@ -62,6 +62,7 @@ def login_view(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
+                UserProfile.objects.get_or_create(user=user)
                 messages.info(request, f'You are now logged in as {username}.')
                 return redirect('home')
             else:
@@ -117,21 +118,42 @@ def post_charity_activity(request):
 
 @login_required
 def donate(request):
-    """Handle donations in Kenyan Shillings"""
+    """Handle donations in Kenyan Shillings via MPesa Daraja/STK Push."""
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
         amount = request.POST.get('amount')
+        phone_number = request.POST.get('phone_number') or profile.phone_number
         message = request.POST.get('message', '')
-        if amount and float(amount) > 0:
-            donation = Donation.objects.create(
-                user=request.user,
-                amount_kes=amount,
-                message=message
-            )
-            messages.success(request, f'Thank you for your donation of KES {amount}!')
-            return redirect('home')
-        else:
+
+        if not phone_number:
+            messages.error(request, 'Please provide a valid phone number to complete the MPesa payment.')
+        elif not amount or float(amount) <= 0:
             messages.error(request, 'Please enter a valid donation amount.')
-    return render(request, 'donate.html')
+        else:
+            try:
+                response = stk_push(
+                    phone_number=phone_number,
+                    amount=amount,
+                    account_ref='SparkHubDonation',
+                    description=message or 'SparkHub donation',
+                )
+                if response.get('ResponseCode') in ('0', 0):
+                    Donation.objects.create(
+                        user=request.user,
+                        amount_kes=amount,
+                        message=message,
+                    )
+                    messages.success(request, 'Donation request sent to MPesa. Please complete the payment on your phone.')
+                    return redirect('home')
+                else:
+                    error_msg = response.get('ResponseDescription', response.get('errorMessage', 'MPesa request failed.'))
+                    messages.error(request, f'MPesa error: {error_msg}')
+            except Exception as exc:
+                import logging
+                logging.error(f'Donation error: {exc}', exc_info=True)
+                messages.error(request, f'Payment request failed: {str(exc)}. Please check your phone number and try again.')
+
+    return render(request, 'donate.html', {'profile': profile})
 
 @login_required
 def events(request):
@@ -193,16 +215,19 @@ def social_feed(request):
 def create_post(request):
     """Create a social media post"""
     if request.method == 'POST':
-        content = request.POST.get('content')
-        if content:
+        content = request.POST.get('content', '').strip()
+        video = request.FILES.get('video')
+
+        if content or video:
             post = Post.objects.create(
                 user=request.user,
-                content=content
+                content=content,
+                video=video,
             )
             messages.success(request, 'Post created!')
             return redirect('social_feed')
         else:
-            messages.error(request, 'Post cannot be empty.')
+            messages.error(request, 'Post cannot be empty. Add text or a video.')
     return render(request, 'create_post.html')
 
 @login_required
@@ -336,54 +361,56 @@ def comment_post(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
-@csrf_exempt
+@login_required
 def process_donation(request):
-    """Handle donation processing and integrate with Halisi API."""
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            amount = data.get('amount')
-            message = data.get('message', '')
+    """Handle donation processing via MPesa Daraja/STK Push."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
 
-            # Halisi API credentials (replace with your actual credentials)
-            halisi_api_url = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'
-            consumer_key = 'your_consumer_key'
-            consumer_secret = 'your_consumer_secret'
-            passkey = 'your_passkey'
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    try:
+        data = json.loads(request.body)
+        amount = data.get('amount')
+        phone_number = data.get('phone_number') or profile.phone_number
+        message = data.get('message', '')
 
-            # Generate access token
-            auth_response = requests.get(
-                'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
-                auth=(consumer_key, consumer_secret)
+        if not phone_number:
+            return JsonResponse({'success': False, 'error': 'Phone number is required.'}, status=400)
+        if not amount or float(amount) <= 0:
+            return JsonResponse({'success': False, 'error': 'Amount must be greater than zero.'}, status=400)
+
+        response = stk_push(
+            phone_number=phone_number,
+            amount=amount,
+            account_ref='SparkHubDonation',
+            description=message or 'SparkHub donation',
+        )
+
+        if response.get('ResponseCode') in ('0', 0):
+            Donation.objects.create(
+                user=request.user,
+                amount_kes=amount,
+                message=message,
             )
-            auth_response.raise_for_status()
-            access_token = auth_response.json().get('access_token')
+            return JsonResponse({'success': True, 'data': response})
 
-            # Prepare STK push request payload
-            headers = {
-                'Authorization': f'Bearer {access_token}',
-                'Content-Type': 'application/json'
-            }
-            payload = {
-                "BusinessShortCode": "174379",
-                "Password": passkey,
-                "Timestamp": timezone.now().strftime('%Y%m%d%H%M%S'),
-                "TransactionType": "CustomerPayBillOnline",
-                "Amount": amount,
-                "PartyA": "254700000000",  # Replace with the user's phone number
-                "PartyB": "174379",
-                "PhoneNumber": "254700000000",  # Replace with the user's phone number
-                "CallBackURL": "https://yourdomain.com/callback",
-                "AccountReference": "Donation",
-                "TransactionDesc": message
-            }
+        error_msg = response.get('ResponseDescription', response.get('errorMessage', 'MPesa request failed.'))
+        return JsonResponse({'success': False, 'error': error_msg, 'data': response})
+    except Exception as exc:
+        import logging
+        logging.error(f'process_donation error: {exc}', exc_info=True)
+        return JsonResponse({'success': False, 'error': str(exc)})
 
-            # Send STK push request
-            response = requests.post(halisi_api_url, headers=headers, json=payload)
-            response.raise_for_status()
 
-            return JsonResponse({"success": True, "message": "Donation processed successfully."})
-        except Exception as e:
-            return JsonResponse({"success": False, "error": str(e)})
+@csrf_exempt
+def mpesa_callback(request):
+    """Accept MPesa payment callback notifications from Safaricom."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
 
-    return JsonResponse({"success": False, "error": "Invalid request method."})
+    try:
+        callback_data = json.loads(request.body)
+        print('MPesa callback received:', callback_data)
+        return JsonResponse({'success': True})
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON.'}, status=400)
