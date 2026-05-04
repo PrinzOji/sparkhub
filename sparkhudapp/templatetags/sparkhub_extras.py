@@ -1,5 +1,6 @@
 from django import template
 from django.contrib.auth.models import Group
+from sparkhudapp.models import Like
 
 register = template.Library()
 
@@ -48,6 +49,14 @@ def subtract(value, arg):
     """Subtract arg from value"""
     try:
         return int(value) - int(arg)
+    except (ValueError, TypeError):
+        return 0
+
+@register.filter
+def mul(value, arg):
+    """Multiply two values."""
+    try:
+        return float(value) * float(arg)
     except (ValueError, TypeError):
         return 0
 

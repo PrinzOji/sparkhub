@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - SparkHub{% endblock %}
+
+{% block content %}
+<div class="settings-shell">
+    <section class="settings-hero">
+        <h1>Edit Profile</h1>
+        <p class="mb-0">Keep your personal details and profile picture up to date.</p>
+    </section>
+
+    <div class="card settings-form-card">
+        <div class="card-header">
+            <h3 class="mb-1">Profile Details</h3>
+            <p class="text-muted mb-0">Changes here update your public SparkHub profile.</p>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" class="settings-form">
+                {% csrf_token %}
+                {{ user_form.as_p }}
+                {{ profile_form.as_p }}
+                <div class="d-flex gap-2 flex-wrap mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">Save Changes</button>
+                    <a href="{% url 'settings' %}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

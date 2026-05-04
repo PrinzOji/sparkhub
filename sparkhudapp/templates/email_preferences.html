@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Email Preferences - SparkHub{% endblock %}
+
+{% block content %}
+<div class="settings-shell">
+    <section class="settings-hero">
+        <h1>Email Preferences</h1>
+        <p class="mb-0">Choose which SparkHub updates should reach your inbox.</p>
+    </section>
+
+    <div class="card settings-form-card">
+        <div class="card-header">
+            <h3 class="mb-1">Email Updates</h3>
+            <p class="text-muted mb-0">You can change these preferences anytime.</p>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <label class="settings-option" for="eventEmails">
+                    <input class="form-check-input mt-1" type="checkbox" id="eventEmails" name="event_emails" checked>
+                    <span><strong>Upcoming events</strong><span class="d-block text-muted">Receive event announcements and reminders.</span></span>
+                </label>
+                <label class="settings-option" for="activityEmails">
+                    <input class="form-check-input mt-1" type="checkbox" id="activityEmails" name="activity_emails" checked>
+                    <span><strong>Charity activity updates</strong><span class="d-block text-muted">Hear about community activity and impact.</span></span>
+                </label>
+                <label class="settings-option" for="donationEmails">
+                    <input class="form-check-input mt-1" type="checkbox" id="donationEmails" name="donation_emails">
+                    <span><strong>Donation reminders</strong><span class="d-block text-muted">Get occasional reminders about causes that need support.</span></span>
+                </label>
+                <div class="d-flex gap-2 flex-wrap mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">Save</button>
+                    <a href="{% url 'settings' %}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

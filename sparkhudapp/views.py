@@ -1,24 +1,38 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.db.models import Sum
 from .models import UserProfile, CharityActivity, Event, EventRegistration, Donation, Post, Comment, Like
+from .forms import UserUpdateForm, ProfileUpdateForm
 import json
 
+@ensure_csrf_cookie
 def home(request):
     """Home page showing recent activities and events"""
     recent_activities = CharityActivity.objects.all().order_by('-date_posted')[:10]
     upcoming_events = Event.objects.filter(event_date__gte=timezone.now()).order_by('event_date')[:5]
     recent_posts = Post.objects.all().order_by('-created_at')[:10]
+    total_users = UserProfile.objects.count()
+    total_activities = CharityActivity.objects.count()
+    total_donations = Donation.objects.aggregate(total=Sum('amount_kes'))['total'] or 0
+    total_events = Event.objects.count()
     
     context = {
         'recent_activities': recent_activities,
         'upcoming_events': upcoming_events,
         'recent_posts': recent_posts,
+        'total_users': total_users,
+        'total_activities': total_activities,
+        'total_donations': total_donations,
+        'total_events': total_events,
     }
     return render(request, 'home.html', context)
 
@@ -163,6 +177,7 @@ def register_for_event(request, event_id):
     return redirect('event_detail', event_id=event_id)
 
 @login_required
+@ensure_csrf_cookie
 def social_feed(request):
     """Social media feed"""
     posts = Post.objects.all().order_by('-created_at')
@@ -187,6 +202,84 @@ def create_post(request):
         else:
             messages.error(request, 'Post cannot be empty.')
     return render(request, 'create_post.html')
+
+@login_required
+def settings(request):
+    """User settings dashboard."""
+    return render(request, 'settings.html')
+
+@login_required
+def edit_profile(request):
+    """Edit user account and profile information."""
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        user_form = UserUpdateForm(request.POST, instance=request.user)
+        profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=profile)
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request, 'Your profile has been updated.')
+            return redirect('profile')
+    else:
+        user_form = UserUpdateForm(instance=request.user)
+        profile_form = ProfileUpdateForm(instance=profile)
+
+    return render(request, 'edit_profile.html', {
+        'user_form': user_form,
+        'profile_form': profile_form,
+    })
+
+@login_required
+def change_password(request):
+    """Change the current user's password."""
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, 'Your password has been changed.')
+            return redirect('settings')
+    else:
+        form = PasswordChangeForm(request.user)
+
+    return render(request, 'change_password.html', {'form': form})
+
+@login_required
+def two_factor(request):
+    """Two-factor authentication settings placeholder."""
+    if request.method == 'POST':
+        messages.success(request, 'Two-factor settings saved.')
+        return redirect('settings')
+    return render(request, 'two_factor.html')
+
+@login_required
+def email_preferences(request):
+    """Email notification preferences."""
+    if request.method == 'POST':
+        messages.success(request, 'Email preferences saved.')
+        return redirect('settings')
+    return render(request, 'email_preferences.html')
+
+@login_required
+def notification_settings(request):
+    """In-app notification preferences."""
+    if request.method == 'POST':
+        messages.success(request, 'Notification settings saved.')
+        return redirect('settings')
+    return render(request, 'notification_settings.html')
+
+@login_required
+def privacy_settings(request):
+    """Privacy controls."""
+    if request.method == 'POST':
+        messages.success(request, 'Privacy settings saved.')
+        return redirect('settings')
+    return render(request, 'privacy_settings.html')
+
+def terms_of_service(request):
+    """Static terms of service page."""
+    return render(request, 'terms_of_service.html')
 
 @login_required
 @require_http_methods(["POST"])

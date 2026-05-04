@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Two-Factor Authentication - SparkHub{% endblock %}
+
+{% block content %}
+<div class="settings-shell">
+    <section class="settings-hero">
+        <h1>Two-Factor Authentication</h1>
+        <p class="mb-0">Add an extra step to help protect your account.</p>
+    </section>
+
+    <div class="card settings-form-card">
+        <div class="card-header">
+            <h3 class="mb-1">Sign-In Protection</h3>
+            <p class="text-muted mb-0">Two-factor authentication helps prevent unwanted access.</p>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <label class="settings-option" for="twoFactorEnabled">
+                    <input class="form-check-input mt-1" type="checkbox" id="twoFactorEnabled" name="two_factor_enabled">
+                    <span>
+                        <strong>Enable two-factor authentication</strong>
+                        <span class="d-block text-muted">Require an additional verification step when signing in.</span>
+                    </span>
+                </label>
+                <div class="d-flex gap-2 flex-wrap mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">Save</button>
+                    <a href="{% url 'settings' %}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

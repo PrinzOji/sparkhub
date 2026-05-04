@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Terms of Service - SparkHub{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Terms of Service</h2>
+
+<div class="card">
+    <div class="card-body">
+        <p>Welcome to SparkHub. By using this site, you agree to use the platform respectfully and honestly.</p>
+        <p>Charity activities, event registrations, posts, comments, and donations should be accurate and appropriate for the community.</p>
+        <p>SparkHub may update these terms as the project grows.</p>
+        <a href="{% url 'settings' %}" class="btn btn-outline-primary">Back to Settings</a>
+    </div>
+</div>
+{% endblock %}

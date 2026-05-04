@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="hero-section">
-    <div class="container text-center">
+    <div class="text-center">
         <h1 class="display-4 mb-4">Welcome to SparkHub</h1>
         <p class="lead mb-4">Bringing people together for charitable causes</p>
         <div>
@@ -20,7 +20,7 @@
     </div>
 </div>
 
-<div class="container">
+<div>
     <div class="row mb-4">
         <div class="col-md-12">
             <h2 class="mb-4">Recent Charity Activities</h2>
@@ -29,7 +29,14 @@
                 <div class="col-md-4 mb-4">
                     <div class="card activity-card h-100">
                         <div class="card-body">
-                            <h5 class="card-title">{{ activity.user.username }}</h5>
+                            <div class="d-flex align-items-center mb-3">
+                                {% if activity.user.userprofile.profile_picture %}
+                                    <img src="{{ activity.user.userprofile.profile_picture.url }}" class="feed-avatar me-3" alt="{{ activity.user.username }}">
+                                {% else %}
+                                    <div class="avatar-circle me-3"><i class="fas fa-user"></i></div>
+                                {% endif %}
+                                <h5 class="card-title mb-0">{{ activity.user.username }}</h5>
+                            </div>
                             <p class="card-text">{{ activity.description|truncatewords:20 }}</p>
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="badge bg-success">+{{ activity.points_earned }} Points</span>
@@ -148,6 +155,23 @@
 {% block extra_js %}
 <script>
 $(document).ready(function() {
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrfToken = getCookie('csrftoken');
+
     // Handle likes via AJAX
     $('.like-btn').click(function(e) {
         e.preventDefault();
@@ -158,16 +182,17 @@ $(document).ready(function() {
             url: '{% url "like_post" %}',
             type: 'POST',
             data: JSON.stringify({
-                'post_id': postId,
-                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+                'post_id': postId
             }),
             contentType: 'application/json',
+            headers: {'X-CSRFToken': csrfToken},
             success: function(response) {
-                btn.find('i').toggleClass('text-danger');
+                btn.find('i').toggleClass('text-danger', response.liked);
                 btn.find('span').text(response.like_count);
             },
             error: function(xhr) {
-                alert('Error: ' + xhr.responseJSON.error);
+                const message = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'Could not update like.';
+                alert('Error: ' + message);
             }
         });
     });
@@ -183,20 +208,22 @@ $(document).ready(function() {
                 type: 'POST',
                 data: JSON.stringify({
                     'post_id': postId,
-                    'content': content,
-                    'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+                    'content': content
                 }),
                 contentType: 'application/json',
+                headers: {'X-CSRFToken': csrfToken},
                 success: function(response) {
                     if (response.success) {
-                        alert('Comment added!');
-                        location.reload(); // Simple reload for now
+                        const btn = $('.comment-btn[data-post-id="' + postId + '"]');
+                        const count = parseInt(btn.find('span').text(), 10) || 0;
+                        btn.find('span').text(count + 1);
                     } else {
                         alert('Error: ' + response.error);
                     }
                 },
                 error: function(xhr) {
-                    alert('Error: ' + xhr.responseJSON.error);
+                    const message = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'Could not add comment.';
+                    alert('Error: ' + message);
                 }
             });
         }

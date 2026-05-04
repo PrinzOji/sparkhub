@@ -69,7 +69,7 @@
                         <p class="fs-4">{{ event.required_points }} points</p>
                         {% if user.is_authenticated %}
                             <div class="progress">
-                                <div class="progress-bar {% if user.userprofile.points >= event.required_points %}bg-success{% else %}bg-warning%} 
+                                <div class="progress-bar {% if user.userprofile.points >= event.required_points %}bg-success{% else %}bg-warning{% endif %}" 
                                     role="progressbar" 
                                     style="width: {% if user.userprofile.points >= event.required_points %}100{% else %}{{ user.userprofile.points|floatdiv:event.required_points|mul:100 }}{% endif %}%"
                                     aria-valuenow="{% if user.userprofile.points >= event.required_points %}100{% else %}{{ user.userprofile.points|floatdiv:event.required_points|mul:100 }}{% endif %}"

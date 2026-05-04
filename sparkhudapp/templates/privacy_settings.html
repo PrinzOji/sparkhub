@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Privacy Settings - SparkHub{% endblock %}
+
+{% block content %}
+<div class="settings-shell">
+    <section class="settings-hero">
+        <h1>Privacy Settings</h1>
+        <p class="mb-0">Decide what other SparkHub members can see.</p>
+    </section>
+
+    <div class="card settings-form-card">
+        <div class="card-header">
+            <h3 class="mb-1">Visibility Controls</h3>
+            <p class="text-muted mb-0">These controls shape your public profile.</p>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <label class="settings-option" for="showProfile">
+                    <input class="form-check-input mt-1" type="checkbox" id="showProfile" name="show_profile" checked>
+                    <span><strong>Show my profile</strong><span class="d-block text-muted">Allow other members to view my profile.</span></span>
+                </label>
+                <label class="settings-option" for="showPoints">
+                    <input class="form-check-input mt-1" type="checkbox" id="showPoints" name="show_points" checked>
+                    <span><strong>Show my points</strong><span class="d-block text-muted">Display my SparkHub points publicly.</span></span>
+                </label>
+                <label class="settings-option" for="showActivities">
+                    <input class="form-check-input mt-1" type="checkbox" id="showActivities" name="show_activities" checked>
+                    <span><strong>Show charity activities</strong><span class="d-block text-muted">Let others see the charity activities I share.</span></span>
+                </label>
+                <div class="d-flex gap-2 flex-wrap mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">Save</button>
+                    <a href="{% url 'settings' %}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
