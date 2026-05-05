@@ -46,7 +46,7 @@ MPESA_CALLBACK_URL=https://your-service.onrender.com/mpesa-express-simulate/
    - Name: `sparkhub`
    - Environment: `Python 3`
    - Build Command: `pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput`
-   - Start Command: `gunicorn sparkhub.wsgi`
+   - Start Command: `gunicorn sparkhub.wsgi:application --bind 0.0.0.0:$PORT`
    - Plan: Free (or paid as needed)
 
 5. **Add Environment Variables**
