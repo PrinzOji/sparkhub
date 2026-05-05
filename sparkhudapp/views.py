@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
@@ -93,6 +94,20 @@ def profile(request):
         'user_events': user_events,
     }
     return render(request, 'profile.html', context)
+
+@login_required
+def user_profile(request, username):
+    """Public profile page for viewing another user's posts."""
+    profile_user = get_object_or_404(User, username=username)
+    profile, _ = UserProfile.objects.get_or_create(user=profile_user)
+    user_posts = Post.objects.filter(user=profile_user).order_by('-created_at')
+
+    context = {
+        'profile_user': profile_user,
+        'profile': profile,
+        'user_posts': user_posts,
+    }
+    return render(request, 'user_profile.html', context)
 
 @login_required
 def post_charity_activity(request):

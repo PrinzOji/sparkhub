@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% load sparkhub_extras %}
 
-{% block title %}Social Feed - SparkHub{% endblock %}
+{% block title %}{{ profile_user.username }} - SparkHub{% endblock %}
 
 {% block content %}
 <section class="hero-section text-center">
-    <h1 class="mb-3">Community Feed</h1>
-    <p class="lead mb-4">Share updates from your charity activities and keep the community inspired.</p>
-    <a href="{% url 'create_post' %}" class="btn btn-light btn-lg">
-        <i class="fas fa-plus me-2"></i>Create Post
+    <h1 class="mb-3">{{ profile_user.username }}'s Profile</h1>
+    <p class="lead mb-4">Browse public posts shared by {{ profile_user.username }}.</p>
+    <a href="{% url 'social_feed' %}" class="btn btn-light btn-lg">
+        <i class="fas fa-arrow-left me-2"></i>Community Feed
     </a>
 </section>
 
@@ -16,19 +16,45 @@
     <div class="col-lg-8">
         <div class="card mb-4">
             <div class="card-body p-4">
-                <h3 class="mb-1">Latest Posts</h3>
-                <p class="text-muted mb-4">Fresh stories and updates from the community.</p>
+                <div class="d-flex align-items-center mb-4">
+                    {% if profile.profile_picture %}
+                        <img src="{{ profile.profile_picture.url }}" class="feed-avatar me-3" alt="{{ profile_user.username }}">
+                    {% else %}
+                        <div class="avatar-circle me-3"><i class="fas fa-user"></i></div>
+                    {% endif %}
+                    <div>
+                        <h2 class="mb-1">{{ profile_user.username }}</h2>
+                        <p class="text-muted mb-0">{{ profile.bio|default:'No bio yet.' }}</p>
+                    </div>
+                </div>
 
-                {% for post in posts %}
+                <div class="row text-center mb-4">
+                    <div class="col-sm-4 mb-3 mb-sm-0">
+                        <h3 class="display-6 mb-0">{{ profile.points }}</h3>
+                        <p class="text-muted mb-0">Points</p>
+                    </div>
+                    <div class="col-sm-4 mb-3 mb-sm-0">
+                        <h3 class="display-6 mb-0">{{ profile_user.charityactivity_set.count }}</h3>
+                        <p class="text-muted mb-0">Activities</p>
+                    </div>
+                    <div class="col-sm-4">
+                        <h3 class="display-6 mb-0">{{ profile_user.post_set.count }}</h3>
+                        <p class="text-muted mb-0">Posts</p>
+                    </div>
+                </div>
+
+                <h3 class="mb-4">Posts by {{ profile_user.username }}</h3>
+
+                {% for post in user_posts %}
                 <div class="post-panel mb-3" id="post-{{ post.id }}">
                     <div class="d-flex align-items-center mb-3">
-                        {% if post.user.userprofile.profile_picture %}
-                            <img src="{{ post.user.userprofile.profile_picture.url }}" class="feed-avatar me-3" alt="{{ post.user.username }}">
+                        {% if profile.profile_picture %}
+                            <img src="{{ profile.profile_picture.url }}" class="feed-avatar me-3" alt="{{ profile_user.username }}">
                         {% else %}
                             <div class="avatar-circle me-3"><i class="fas fa-user"></i></div>
                         {% endif %}
                         <div>
-                            <h5 class="mb-0"><a href="{% url 'user_profile' post.user.username %}">{{ post.user.username }}</a></h5>
+                            <h5 class="mb-0">{{ profile_user.username }}</h5>
                             <small class="text-muted">Posted {{ post.created_at|timesince }} ago</small>
                         </div>
                     </div>
@@ -63,8 +89,7 @@
                 {% empty %}
                 <div class="text-center py-5">
                     <h4>No posts yet</h4>
-                    <p class="text-muted">Be the first to share something with the community.</p>
-                    <a href="{% url 'create_post' %}" class="btn btn-primary">Create First Post</a>
+                    <p class="text-muted">{{ profile_user.username }} has not shared anything yet.</p>
                 </div>
                 {% endfor %}
             </div>
@@ -74,30 +99,10 @@
     <div class="col-lg-4">
         <div class="card mb-4">
             <div class="card-body p-4">
-                <h3 class="mb-5">Quick Stats</h3>
-                {% if user.is_authenticated %}
-                    <p class="text-muted mb-1">Your Points</p>
-                    <p class="display-6 mb-1">{{ user.userprofile.points }}</p>
-                    <p class="text-muted mb-4">Earn 50 points per charity activity</p>
-
-                    <p class="text-muted mb-1">Activities Shared</p>
-                    <p class="display-6 mb-4">{{ user.charityactivity_set.count }}</p>
-
-                    <p class="text-muted mb-1">Events Registered</p>
-                    <p class="display-6 mb-0">{{ user.eventregistration_set.count }}</p>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-body p-4">
-                <h3 class="mb-5">How It Works</h3>
-                <ol class="text-muted ps-4">
-                    <li class="mb-2">Share your charity activities to earn points.</li>
-                    <li class="mb-2">Use points for event access and rewards.</li>
-                    <li class="mb-2">Keep posting to help the community grow.</li>
-                    <li>Donate and support causes whenever you can.</li>
-                </ol>
+                <h3 class="mb-3">About {{ profile_user.username }}</h3>
+                <p class="text-muted">{{ profile.bio|default:'No biography provided.' }}</p>
+                <p class="text-muted mb-1">Joined</p>
+                <p>{{ profile_user.date_joined|date:'F j, Y' }}</p>
             </div>
         </div>
     </div>
@@ -132,9 +137,7 @@ $(document).ready(function() {
         $.ajax({
             url: '{% url "like_post" %}',
             type: 'POST',
-            data: JSON.stringify({
-                'post_id': postId
-            }),
+            data: JSON.stringify({'post_id': postId}),
             contentType: 'application/json',
             headers: {'X-CSRFToken': csrfToken},
             success: function(response) {
@@ -156,10 +159,7 @@ $(document).ready(function() {
             $.ajax({
                 url: '{% url "comment_post" %}',
                 type: 'POST',
-                data: JSON.stringify({
-                    'post_id': postId,
-                    'content': content
-                }),
+                data: JSON.stringify({'post_id': postId, 'content': content}),
                 contentType: 'application/json',
                 headers: {'X-CSRFToken': csrfToken},
                 success: function(response) {
