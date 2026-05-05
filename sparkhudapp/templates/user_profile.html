@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load sparkhub_extras %}
+
+{% block title %}{{ profile_user.username }} - SparkHub{% endblock %}
+
+{% block content %}
+<section class="hero-section text-center">
+    <h1 class="mb-3">{{ profile_user.username }}'s Profile</h1>
+    <p class="lead mb-4">Browse public posts shared by {{ profile_user.username }}.</p>
+    <a href="{% url 'social_feed' %}" class="btn btn-light btn-lg">
+        <i class="fas fa-arrow-left me-2"></i>Community Feed
+    </a>
+</section>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-4">
+                    {% if profile.profile_picture %}
+                        <img src="{{ profile.profile_picture.url }}" class="feed-avatar me-3" alt="{{ profile_user.username }}">
+                    {% else %}
+                        <div class="avatar-circle me-3"><i class="fas fa-user"></i></div>
+                    {% endif %}
+                    <div>
+                        <h2 class="mb-1">{{ profile_user.username }}</h2>
+                        <p class="text-muted mb-0">{{ profile.bio|default:'No bio yet.' }}</p>
+                    </div>
+                </div>
+
+                <div class="row text-center mb-4">
+                    <div class="col-sm-4 mb-3 mb-sm-0">
+                        <h3 class="display-6 mb-0">{{ profile.points }}</h3>
+                        <p class="text-muted mb-0">Points</p>
+                    </div>
+                    <div class="col-sm-4 mb-3 mb-sm-0">
+                        <h3 class="display-6 mb-0">{{ profile_user.charityactivity_set.count }}</h3>
+                        <p class="text-muted mb-0">Activities</p>
+                    </div>
+                    <div class="col-sm-4">
+                        <h3 class="display-6 mb-0">{{ profile_user.post_set.count }}</h3>
+                        <p class="text-muted mb-0">Posts</p>
+                    </div>
+                </div>
+
+                <h3 class="mb-4">Posts by {{ profile_user.username }}</h3>
+
+                {% for post in user_posts %}
+                <div class="post-panel mb-3" id="post-{{ post.id }}">
+                    <div class="d-flex align-items-center mb-3">
+                        {% if profile.profile_picture %}
+                            <img src="{{ profile.profile_picture.url }}" class="feed-avatar me-3" alt="{{ profile_user.username }}">
+                        {% else %}
+                            <div class="avatar-circle me-3"><i class="fas fa-user"></i></div>
+                        {% endif %}
+                        <div>
+                            <h5 class="mb-0">{{ profile_user.username }}</h5>
+                            <small class="text-muted">Posted {{ post.created_at|timesince }} ago</small>
+                        </div>
+                    </div>
+
+                    <p class="mb-3">{{ post.content }}</p>
+
+                    {% if post.video %}
+                        <video controls class="w-100 rounded mb-3" style="max-height: 420px;">
+                            <source src="{{ post.video.url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    {% endif %}
+
+                    {% if post.image %}
+                        <img src="{{ post.image.url }}" class="img-fluid rounded mb-3" alt="Post image" style="max-height: 300px;">
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary like-btn" data-post-id="{{ post.id }}">
+                                <i class="fas fa-heart{% if user.is_authenticated and user|has_liked_post:post.id %} text-danger{% endif %} me-2"></i>
+                                <span>{{ post.likes.count }}</span>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary comment-btn ms-1" data-post-id="{{ post.id }}">
+                                <i class="fas fa-comment me-2"></i>
+                                <span>{{ post.comments.count }}</span>
+                            </button>
+                        </div>
+                        <small class="text-muted">Updated {{ post.updated_at|timesince }} ago</small>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-5">
+                    <h4>No posts yet</h4>
+                    <p class="text-muted">{{ profile_user.username }} has not shared anything yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <h3 class="mb-3">About {{ profile_user.username }}</h3>
+                <p class="text-muted">{{ profile.bio|default:'No biography provided.' }}</p>
+                <p class="text-muted mb-1">Joined</p>
+                <p>{{ profile_user.date_joined|date:'F j, Y' }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrfToken = getCookie('csrftoken');
+
+    $('.like-btn').click(function(e) {
+        e.preventDefault();
+        const btn = $(this);
+        const postId = btn.data('post-id');
+
+        $.ajax({
+            url: '{% url "like_post" %}',
+            type: 'POST',
+            data: JSON.stringify({'post_id': postId}),
+            contentType: 'application/json',
+            headers: {'X-CSRFToken': csrfToken},
+            success: function(response) {
+                btn.find('i').toggleClass('text-danger', response.liked);
+                btn.find('span').text(response.like_count);
+            },
+            error: function(xhr) {
+                const message = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'Could not update like.';
+                alert('Error: ' + message);
+            }
+        });
+    });
+
+    $('.comment-btn').click(function(e) {
+        e.preventDefault();
+        const postId = $(this).data('post-id');
+        const content = prompt('Enter your comment:');
+        if (content && content.trim() !== '') {
+            $.ajax({
+                url: '{% url "comment_post" %}',
+                type: 'POST',
+                data: JSON.stringify({'post_id': postId, 'content': content}),
+                contentType: 'application/json',
+                headers: {'X-CSRFToken': csrfToken},
+                success: function(response) {
+                    if (response.success) {
+                        const btn = $('.comment-btn[data-post-id="' + postId + '"]');
+                        const count = parseInt(btn.find('span').text(), 10) || 0;
+                        btn.find('span').text(count + 1);
+                    } else {
+                        alert('Error: ' + response.error);
+                    }
+                },
+                error: function(xhr) {
+                    const message = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'Could not add comment.';
+                    alert('Error: ' + message);
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}
