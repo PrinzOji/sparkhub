@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: sparkhub
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
+    startCommand: gunicorn sparkhub.wsgi
+    envVars:
+      - key: DEBUG
+        value: false
+      - key: SECRET_KEY
+        sync: false
+      - key: ALLOWED_HOSTS
+        value: sparkhub.onrender.com
+      - key: DATABASE_URL
+        sync: false
+      - key: MPESA_ENVIRONMENT
+        value: sandbox
+      - key: MPESA_CONSUMER_KEY
+        sync: false
+      - key: MPESA_CONSUMER_SECRET
+        sync: false
+      - key: MPESA_PASSKEY
+        sync: false
+      - key: MPESA_SHORTCODE
+        sync: false
+      - key: MPESA_CALLBACK_URL
+        sync: false

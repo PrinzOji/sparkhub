@@ -42,6 +42,7 @@ body {
     position: fixed;
     inset: 0 auto 0 0;
     width: var(--sidebar-width);
+    min-height: 100vh;
     background: var(--sidebar-dark);
     color: #e8edf5;
     z-index: 1000;
@@ -103,10 +104,50 @@ body {
     font-size: 18px;
 }
 
+.sidebar-toggle {
+    display: none;
+    position: fixed;
+    top: 18px;
+    left: 18px;
+    z-index: 1101;
+    border: none;
+    background: var(--spark-green);
+    color: #fff;
+    padding: 12px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.sidebar-toggle i {
+    font-size: 18px;
+}
+
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1050;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.sidebar-backdrop.active {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+}
+
 /* Main Content */
 .main-content {
     min-height: 100vh;
     margin-left: var(--sidebar-width);
+    position: relative;
 }
 
 .content-wrap {
@@ -564,7 +605,7 @@ h2 {
 }
 
 /* Responsive Design */
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
     :root {
         --sidebar-width: 100%;
     }
@@ -574,8 +615,17 @@ h2 {
     }
 
     .sidebar {
-        position: static;
-        width: 100%;
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: min(320px, 80%);
+        min-height: 100vh;
+        z-index: 1100;
+        transition: left 0.25s ease;
+    }
+
+    body.sidebar-open .sidebar {
+        left: 0;
     }
 
     .sidebar-brand {
@@ -584,7 +634,7 @@ h2 {
 
     .sidebar-nav {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: 1fr;
         padding-top: 0;
     }
 
@@ -593,12 +643,30 @@ h2 {
         font-size: 14px;
     }
 
+    .sidebar-toggle {
+        display: inline-flex;
+    }
+
+    .sidebar-backdrop.active {
+        display: block;
+    }
+
     .main-content {
         margin-left: 0;
     }
 
     .content-wrap {
         padding: 24px 14px 48px;
+    }
+
+    body.sidebar-open {
+        overflow: hidden;
+    }
+}
+
+@media (max-width: 700px) {
+    .sidebar-nav {
+        grid-template-columns: 1fr;
     }
 }
 

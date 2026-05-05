@@ -21,6 +21,40 @@ document.addEventListener('DOMContentLoaded', function() {
             return new bootstrap.Popover(popoverTriggerEl);
         });
     }
+
+    const sidebarToggle = document.querySelector('.sidebar-toggle');
+    const sidebarBackdrop = document.querySelector('.sidebar-backdrop');
+    const body = document.body;
+
+    function toggleSidebar() {
+        const isOpen = body.classList.toggle('sidebar-open');
+        sidebarToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        if (sidebarBackdrop) {
+            sidebarBackdrop.classList.toggle('active', isOpen);
+        }
+    }
+
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', toggleSidebar);
+    }
+
+    if (sidebarBackdrop) {
+        sidebarBackdrop.addEventListener('click', toggleSidebar);
+    }
+
+    document.querySelectorAll('.sidebar-nav a').forEach(link => {
+        link.addEventListener('click', function () {
+            if (body.classList.contains('sidebar-open')) {
+                toggleSidebar();
+            }
+        });
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && body.classList.contains('sidebar-open')) {
+            toggleSidebar();
+        }
+    });
 });
 
 // Utility function to add active class to current nav link
