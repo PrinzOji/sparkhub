@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -12,19 +14,34 @@ from django.utils import timezone
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
-from django.db.models import Sum
+from django.db.models import Prefetch, Sum
 from .models import UserProfile, CharityActivity, Event, EventRegistration, Donation, Post, Comment, Like
 from .forms import UserUpdateForm, ProfileUpdateForm
 from .mpesa import stk_push
 import json
 import requests
 
+POST_EDIT_WINDOW = timedelta(days=7)
+
+
+def add_post_permissions(posts, user):
+    """Attach lightweight UI permissions for the current viewer."""
+    now = timezone.now()
+    for post in posts:
+        is_owner = user.is_authenticated and post.user_id == user.id
+        post.can_delete = is_owner
+        post.can_edit = is_owner and now - post.created_at <= POST_EDIT_WINDOW
+    return posts
+
+
 @ensure_csrf_cookie
 def home(request):
     """Home page showing recent activities and events"""
+    comments = Comment.objects.select_related('user').order_by('created_at')
     recent_activities = CharityActivity.objects.all().order_by('-date_posted')[:10]
     upcoming_events = Event.objects.filter(event_date__gte=timezone.now()).order_by('event_date')[:5]
-    recent_posts = Post.objects.all().order_by('-created_at')[:10]
+    recent_posts = Post.objects.prefetch_related(Prefetch('comments', queryset=comments, to_attr='visible_comments')).order_by('-created_at')[:10]
+    add_post_permissions(recent_posts, request.user)
     total_users = UserProfile.objects.count()
     total_activities = CharityActivity.objects.count()
     total_donations = Donation.objects.aggregate(total=Sum('amount_kes'))['total'] or 0
@@ -112,7 +129,11 @@ def user_profile(request, username):
     """Public profile page for viewing another user's posts."""
     profile_user = get_object_or_404(User, username=username)
     profile, _ = UserProfile.objects.get_or_create(user=profile_user)
-    user_posts = Post.objects.filter(user=profile_user).order_by('-created_at')
+    comments = Comment.objects.select_related('user').order_by('created_at')
+    user_posts = Post.objects.filter(user=profile_user).prefetch_related(
+        Prefetch('comments', queryset=comments, to_attr='visible_comments')
+    ).order_by('-created_at')
+    add_post_permissions(user_posts, request.user)
 
     context = {
         'profile_user': profile_user,
@@ -234,7 +255,9 @@ def register_for_event(request, event_id):
 @ensure_csrf_cookie
 def social_feed(request):
     """Social media feed"""
-    posts = Post.objects.all().order_by('-created_at')
+    comments = Comment.objects.select_related('user').order_by('created_at')
+    posts = Post.objects.prefetch_related(Prefetch('comments', queryset=comments, to_attr='visible_comments')).order_by('-created_at')
+    add_post_permissions(posts, request.user)
     
     context = {
         'posts': posts,
@@ -246,19 +269,63 @@ def create_post(request):
     """Create a social media post"""
     if request.method == 'POST':
         content = request.POST.get('content', '').strip()
+        image = request.FILES.get('image')
         video = request.FILES.get('video')
 
-        if content or video:
+        if content or image or video:
             post = Post.objects.create(
                 user=request.user,
                 content=content,
+                image=image,
                 video=video,
             )
             messages.success(request, 'Post created!')
             return redirect('social_feed')
         else:
-            messages.error(request, 'Post cannot be empty. Add text or a video.')
+            messages.error(request, 'Post cannot be empty. Add text, an image, or a video.')
     return render(request, 'create_post.html')
+
+
+@login_required
+def edit_post(request, post_id):
+    """Edit a post during the 7-day edit window."""
+    post = get_object_or_404(Post, id=post_id, user=request.user)
+
+    if timezone.now() - post.created_at > POST_EDIT_WINDOW:
+        messages.error(request, 'Posts can only be edited within 7 days of being created.')
+        return redirect('social_feed')
+
+    if request.method == 'POST':
+        content = request.POST.get('content', '').strip()
+        image = request.FILES.get('image')
+        video = request.FILES.get('video')
+
+        has_existing_media = bool(post.image or post.video)
+        if content or image or video or has_existing_media:
+            post.content = content
+            if image:
+                post.image = image
+            if video:
+                post.video = video
+            post.save()
+            messages.success(request, 'Post updated.')
+            return redirect('social_feed')
+
+        messages.error(request, 'Post cannot be empty. Add text, an image, or a video.')
+
+    return render(request, 'edit_post.html', {'post': post})
+
+
+@login_required
+def delete_post(request, post_id):
+    """Delete a post owned by the current user."""
+    post = get_object_or_404(Post, id=post_id, user=request.user)
+    if request.method == 'POST':
+        post.delete()
+        messages.success(request, 'Post deleted.')
+        return redirect('social_feed')
+
+    return render(request, 'delete_post.html', {'post': post})
 
 @login_required
 def settings(request):

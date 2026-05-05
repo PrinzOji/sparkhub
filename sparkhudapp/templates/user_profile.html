@@ -57,6 +57,20 @@
                             <h5 class="mb-0">{{ profile_user.username }}</h5>
                             <small class="text-muted">Posted {{ post.created_at|timesince }} ago</small>
                         </div>
+                        {% if post.can_edit or post.can_delete %}
+                            <div class="post-actions ms-auto">
+                                {% if post.can_edit %}
+                                    <a href="{% url 'edit_post' post.id %}" class="btn btn-sm btn-outline-secondary" title="Edit post">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                {% endif %}
+                                {% if post.can_delete %}
+                                    <a href="{% url 'delete_post' post.id %}" class="btn btn-sm btn-outline-danger" title="Delete post">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
                     </div>
 
                     <p class="mb-3">{{ post.content }}</p>
@@ -84,6 +98,35 @@
                             </button>
                         </div>
                         <small class="text-muted">Updated {{ post.updated_at|timesince }} ago</small>
+                    </div>
+
+                    <div class="comments-panel mt-3 d-none" id="comments-{{ post.id }}">
+                        <div class="comments-list">
+                            {% for comment in post.visible_comments %}
+                                <div class="comment-item">
+                                    <div class="comment-avatar"><i class="fas fa-user"></i></div>
+                                    <div class="comment-body">
+                                        <div class="comment-meta">
+                                            <strong>{{ comment.user.username }}</strong>
+                                            <span>{{ comment.created_at|timesince }} ago</span>
+                                        </div>
+                                        <p>{{ comment.content }}</p>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <p class="comments-empty mb-0">No comments yet.</p>
+                            {% endfor %}
+                        </div>
+                        {% if user.is_authenticated %}
+                            <form class="comment-form mt-3" data-post-id="{{ post.id }}">
+                                <input type="text" class="form-control form-control-sm" name="content" placeholder="Add a comment..." autocomplete="off">
+                                <button class="btn btn-primary btn-sm" type="submit">Post</button>
+                            </form>
+                        {% else %}
+                            <div class="comments-login mt-3">
+                                <a href="{% url 'login' %}">Login</a> or <a href="{% url 'register' %}">register</a> to comment.
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
                 {% empty %}
@@ -154,7 +197,15 @@ $(document).ready(function() {
     $('.comment-btn').click(function(e) {
         e.preventDefault();
         const postId = $(this).data('post-id');
-        const content = prompt('Enter your comment:');
+        $('#comments-' + postId).toggleClass('d-none');
+    });
+
+    $('.comment-form').submit(function(e) {
+        e.preventDefault();
+        const form = $(this);
+        const postId = form.data('post-id');
+        const input = form.find('input[name="content"]');
+        const content = input.val();
         if (content && content.trim() !== '') {
             $.ajax({
                 url: '{% url "comment_post" %}',
@@ -167,6 +218,17 @@ $(document).ready(function() {
                         const btn = $('.comment-btn[data-post-id="' + postId + '"]');
                         const count = parseInt(btn.find('span').text(), 10) || 0;
                         btn.find('span').text(count + 1);
+                        const list = $('#comments-' + postId + ' .comments-list');
+                        list.find('.comments-empty').remove();
+                        const item = $('<div class="comment-item"></div>');
+                        item.append('<div class="comment-avatar"><i class="fas fa-user"></i></div>');
+                        const body = $('<div class="comment-body"></div>');
+                        body.append('<div class="comment-meta"><strong></strong><span>just now</span></div>');
+                        body.find('strong').text(response.comment.user);
+                        body.append($('<p></p>').text(response.comment.content));
+                        item.append(body);
+                        list.append(item);
+                        input.val('');
                     } else {
                         alert('Error: ' + response.error);
                     }

@@ -265,6 +265,22 @@ h2 {
     padding: 28px 30px;
 }
 
+.post-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+}
+
+.post-actions .btn {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
 .activity-card, 
 .event-card, 
 .post-card, 
@@ -313,6 +329,74 @@ h2 {
     object-fit: cover;
     object-position: center;
     flex: 0 0 60px;
+}
+
+.comments-panel {
+    background: #ffffff;
+    border: 1px solid rgba(15, 24, 40, 0.08);
+    border-radius: 14px;
+    padding: 14px;
+}
+
+.comments-list {
+    display: grid;
+    gap: 12px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.comment-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #cbd5e1;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 32px;
+    font-size: 13px;
+}
+
+.comment-body {
+    min-width: 0;
+    flex: 1;
+}
+
+.comment-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 13px;
+}
+
+.comment-meta span,
+.comments-empty,
+.comments-login {
+    color: #697386;
+    font-size: 13px;
+}
+
+.comment-body p {
+    margin: 2px 0 0;
+    color: var(--text-dark);
+    overflow-wrap: anywhere;
+}
+
+.comment-form {
+    display: flex;
+    gap: 8px;
+}
+
+.comment-form .form-control {
+    min-width: 0;
 }
 
 /* Profile Styles */

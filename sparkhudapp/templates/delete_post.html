@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Post - SparkHub{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6 offset-lg-3">
+        <div class="card form-card mb-4">
+            <div class="card-header text-center">
+                <i class="fas fa-trash me-2"></i>
+                <h3 class="mb-0">Delete Post</h3>
+            </div>
+            <div class="card-body">
+                <p class="mb-4">Are you sure you want to delete this post? This cannot be undone.</p>
+                <div class="post-panel mb-4">
+                    <p class="mb-0">{{ post.content|default:'This post has media only.'|truncatewords:35 }}</p>
+                </div>
+                <form method="post" class="d-grid gap-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-lg"><i class="fas fa-trash me-2"></i>Delete Post</button>
+                    <a href="{% url 'social_feed' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i>Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
