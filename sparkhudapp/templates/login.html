@@ -13,6 +13,9 @@
                 <div class="card-body">
                     <form method="post">
                         {% csrf_token %}
+                        {% if next %}
+                            <input type="hidden" name="next" value="{{ next }}">
+                        {% endif %}
                         {{ form.non_field_errors }}
                         <div class="mb-3">
                             <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
@@ -38,7 +41,7 @@
                     </form>
                 </div>
                 <div class="card-footer text-center">
-                    <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+                    <p>Don't have an account? <a href="{% url 'register' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Register here</a></p>
                 </div>
             </div>
         </div>

@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
@@ -45,6 +47,7 @@ def about(request):
 
 def register(request):
     """User registration"""
+    next_url = request.POST.get('next') or request.GET.get('next')
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
@@ -52,13 +55,16 @@ def register(request):
             username = form.cleaned_data.get('username')
             messages.success(request, f'Account created for {username}!')
             login(request, user)
+            if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                return redirect(next_url)
             return redirect('home')
     else:
         form = UserCreationForm()
-    return render(request, 'register.html', {'form': form})
+    return render(request, 'register.html', {'form': form, 'next': next_url})
 
 def login_view(request):
     """User login"""
+    next_url = request.POST.get('next') or request.GET.get('next')
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
@@ -69,13 +75,15 @@ def login_view(request):
                 login(request, user)
                 UserProfile.objects.get_or_create(user=user)
                 messages.info(request, f'You are now logged in as {username}.')
+                if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                    return redirect(next_url)
                 return redirect('home')
             else:
                 messages.error(request, 'Invalid username or password.')
         else:
             messages.error(request, 'Invalid username or password.')
     form = AuthenticationForm()
-    return render(request, 'login.html', {'form': form})
+    return render(request, 'login.html', {'form': form, 'next': next_url})
 
 def logout_view(request):
     """User logout"""
@@ -174,7 +182,6 @@ def donate(request):
 
     return render(request, 'donate.html', {'profile': profile})
 
-@login_required
 def events(request):
     """List all events"""
     upcoming_events = Event.objects.filter(event_date__gte=timezone.now()).order_by('event_date')
@@ -186,11 +193,12 @@ def events(request):
     }
     return render(request, 'events.html', context)
 
-@login_required
 def event_detail(request, event_id):
     """Event detail page"""
     event = get_object_or_404(Event, id=event_id)
-    user_registered = EventRegistration.objects.filter(user=request.user, event=event).exists()
+    user_registered = False
+    if request.user.is_authenticated:
+        user_registered = EventRegistration.objects.filter(user=request.user, event=event).exists()
     
     context = {
         'event': event,
@@ -198,24 +206,27 @@ def event_detail(request, event_id):
     }
     return render(request, 'event_detail.html', context)
 
-@login_required
 def register_for_event(request, event_id):
     """Register for an event"""
-    if request.method == 'POST':
-        event = get_object_or_404(Event, id=event_id)
-        profile, created = UserProfile.objects.get_or_create(user=request.user)
-        
-        # Check if user has enough points
-        if profile.points >= event.required_points:
-            # Check if already registered
-            if not EventRegistration.objects.filter(user=request.user, event=event).exists():
-                EventRegistration.objects.create(user=request.user, event=event)
-                messages.success(request, f'Successfully registered for {event.title}!')
-            else:
-                messages.info(request, 'You are already registered for this event.')
+    event = get_object_or_404(Event, id=event_id)
+    if not request.user.is_authenticated:
+        messages.info(request, 'Please create an account before registering for an event.')
+        register_url = f"{reverse('register')}?next={request.get_full_path()}"
+        return redirect(register_url)
+
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+
+    # Check if user has enough points
+    if profile.points >= event.required_points:
+        # Check if already registered
+        if not EventRegistration.objects.filter(user=request.user, event=event).exists():
+            EventRegistration.objects.create(user=request.user, event=event)
+            messages.success(request, f'Successfully registered for {event.title}!')
         else:
-            needed_points = event.required_points - profile.points
-            messages.error(request, f'You need {needed_points} more points to register for this event. Earn points by posting charity activities!')
+            messages.info(request, 'You are already registered for this event.')
+    else:
+        needed_points = event.required_points - profile.points
+        messages.error(request, f'You need {needed_points} more points to register for this event. Earn points by posting charity activities!')
     
     return redirect('event_detail', event_id=event_id)
 
