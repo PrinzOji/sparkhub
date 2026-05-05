@@ -1,2 +1,2 @@
-release: python manage.py migrate
-web: gunicorn sparkhub.wsgi --log-file -
+release: python manage.py migrate && python manage.py collectstatic --noinput
+web: gunicorn sparkhub.wsgi
