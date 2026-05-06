@@ -109,7 +109,7 @@ def logout_view(request):
     messages.info(request, 'You have been logged out.')
     return redirect('home')
 
-@login_required
+
 def profile(request):
     """User profile page"""
     profile, created = UserProfile.objects.get_or_create(user=request.user)
@@ -125,7 +125,7 @@ def profile(request):
     }
     return render(request, 'profile.html', context)
 
-@login_required
+
 def user_profile(request, username):
     """Public profile page for viewing another user's posts."""
     profile_user = get_object_or_404(User, username=username)
@@ -143,7 +143,7 @@ def user_profile(request, username):
     }
     return render(request, 'user_profile.html', context)
 
-@login_required
+
 def post_charity_activity(request):
     """Post a new charity activity"""
     if request.method == 'POST':
@@ -165,7 +165,7 @@ def post_charity_activity(request):
             messages.error(request, 'Please describe your charity activity.')
     return render(request, 'post_activity.html')
 
-@login_required
+
 def donate(request):
     """Handle donations in Kenyan Shillings via MPesa Daraja/STK Push."""
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
