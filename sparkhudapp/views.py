@@ -35,7 +35,7 @@ def add_post_permissions(posts, user):
     return posts
 
 
-@ensure_csrf_cookie
+
 def home(request):
     """Home page showing recent activities and events"""
     comments = Comment.objects.select_related('user').order_by('created_at')
@@ -227,7 +227,7 @@ def event_detail(request, event_id):
         'user_registered': user_registered,
     }
     return render(request, 'event_detail.html', context)
-
+@login_required
 def register_for_event(request, event_id):
     """Register for an event"""
     event = get_object_or_404(Event, id=event_id)
@@ -252,8 +252,8 @@ def register_for_event(request, event_id):
     
     return redirect('event_detail', event_id=event_id)
 
-@login_required
-@ensure_csrf_cookie
+
+
 def social_feed(request):
     """Social media feed"""
     comments = Comment.objects.select_related('user').order_by('created_at')
