@@ -44,6 +44,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.querySelectorAll('.sidebar-nav a').forEach(link => {
         link.addEventListener('click', function () {
+            // Always close sidebar when any navigation link is clicked
+            // This ensures proper behavior even when links redirect to login
             if (body.classList.contains('sidebar-open')) {
                 toggleSidebar();
             }
