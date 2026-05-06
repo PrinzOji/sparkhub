@@ -5,7 +5,8 @@
 {% block title %}SparkHub - Home{% endblock %}
 
 {% block content %}
-<div class="hero-section" style="background-image: url('{% static 'images/hands.jpg' %}');">
+{% static 'images/hands.jpg' as hero_image %}
+<div class="hero-section" style="background-image: url('{{ hero_image }}');">
     <div class="text-center">
         <h1 class="display-4 mb-4">Welcome to SparkHub</h1>
         <p class="lead mb-4">Bringing people together for charitable causes</p>
