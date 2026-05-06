@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required as auth_login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.http import JsonResponse
@@ -22,6 +22,7 @@ import json
 import requests
 
 POST_EDIT_WINDOW = timedelta(days=7)
+login_required = auth_login_required(login_url='login')
 
 
 def add_post_permissions(posts, user):
