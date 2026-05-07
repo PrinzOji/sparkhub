@@ -110,6 +110,7 @@ def logout_view(request):
     return redirect('home')
 
 
+@login_required
 def profile(request):
     """User profile page"""
     profile, created = UserProfile.objects.get_or_create(user=request.user)
@@ -144,6 +145,7 @@ def user_profile(request, username):
     return render(request, 'user_profile.html', context)
 
 
+@login_required
 def post_charity_activity(request):
     """Post a new charity activity"""
     if request.method == 'POST':
@@ -166,6 +168,7 @@ def post_charity_activity(request):
     return render(request, 'post_activity.html')
 
 
+@login_required
 def donate(request):
     """Handle donations in Kenyan Shillings via MPesa Daraja/STK Push."""
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
@@ -204,6 +207,7 @@ def donate(request):
 
     return render(request, 'donate.html', {'profile': profile})
 
+@login_required
 def events(request):
     """List all events"""
     upcoming_events = Event.objects.filter(event_date__gte=timezone.now()).order_by('event_date')
@@ -254,6 +258,7 @@ def register_for_event(request, event_id):
 
 
 
+@login_required
 def social_feed(request):
     """Social media feed"""
     comments = Comment.objects.select_related('user').order_by('created_at')

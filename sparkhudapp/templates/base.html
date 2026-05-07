@@ -12,7 +12,6 @@
     <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
-<h1>please login to access the other pages</h1>
 <body>
     <div class="app-shell">
         <aside id="sidebar" class="sidebar">
@@ -26,6 +25,11 @@
                     <li><a class="{% if request.resolver_match.url_name == 'donate' %}active{% endif %}" href="{% url 'donate' %}"><i class="fas fa-hand-holding-heart"></i> <span>Donate</span></a></li>
                     <li><a class="{% if request.resolver_match.url_name == 'settings' %}active{% endif %}" href="{% url 'settings' %}"><i class="fas fa-gear"></i> <span>Settings</span></a></li>
                 {% else %}
+                    <li><a href="{% url 'login' %}?next={% url 'profile' %}"><i class="fas fa-user"></i> <span>Profile</span></a></li>
+                    <li><a href="{% url 'login' %}?next={% url 'social_feed' %}"><i class="fas fa-home"></i> <span>Feed</span></a></li>
+                    <li><a href="{% url 'login' %}?next={% url 'events' %}"><i class="fas fa-calendar"></i> <span>Events</span></a></li>
+                    <li><a href="{% url 'login' %}?next={% url 'post_activity' %}"><i class="fas fa-plus"></i> <span>Share Activity</span></a></li>
+                    <li><a href="{% url 'login' %}?next={% url 'donate' %}"><i class="fas fa-hand-holding-heart"></i> <span>Donate</span></a></li>
                     <li><a href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> <span>Login</span></a></li>
                     <li><a href="{% url 'register' %}"><i class="fas fa-user-plus"></i> <span>Register</span></a></li>
                 {% endif %}
