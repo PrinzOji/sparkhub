@@ -17,7 +17,7 @@
         <aside id="sidebar" class="sidebar">
             <a class="sidebar-br {% if user.is_authenticated %}
           and" href="{% url 'home' %}">SparkHub</a>
-            <!-- <ul class="sidebar-nav">
+             <ul class="sidebar-nav">
                          <li><a class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}" href="{% url 'profile' %}"><i class="fas fa-user"></i> <span>Profile</span></a></li>
                     <li><a class="{% if request.resolver_match.url_name == 'social_feed' %}active{% endif %}" href="{% url 'social_feed' %}"><i class="fas fa-home"></i> <span>Feed</span></a></li>
                     <li><a class="{% if request.resolver_match.url_name == 'events' or request.resolver_match.url_name == 'event_detail' %}active{% endif %}" href="{% url 'events' %}"><i class="fas fa-calendar"></i> <span>Events</span></a></li>

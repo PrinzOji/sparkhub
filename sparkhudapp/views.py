@@ -22,7 +22,7 @@ import json
 import requests
 
 POST_EDIT_WINDOW = timedelta(days=7)
-login_required = auth_login_required(login_url='login')
+login_required = auth_login_required(login_url='/login/')
 
 
 def add_post_permissions(posts, user):
